@@ -1,7 +1,8 @@
 "use client"
 
 import "./Login.css"
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, DOMElement, ButtonHTMLAttributes } from "react";
+import validator from "validator";
 
 export default function Login() {
     const [formData, setFormData] = useState({
@@ -15,13 +16,24 @@ export default function Login() {
     const [passwordMatch, setPasswordMatch] = useState(false)
 
     const confirmPassword = () => {
-        if (formData.confirmPassword != "" && formData.password !== formData.confirmPassword) {
+        if (formData.confirmPassword != "" && 
+            formData.password !== formData.confirmPassword) {
             setPasswordMatch(true);
         }
         else {
             setPasswordMatch(false);
         }
     };
+
+    const createAccount = (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (formData.firstName != "" &&
+            formData.lastName != "" &&
+            validator.isEmail(formData.email) &&
+            passwordMatch == true
+        ) {
+            
+        }
+    }
 
     return (
         <section className="bg-white">
@@ -193,6 +205,7 @@ export default function Login() {
                             <div className="col-span-6 sm:flex sm:items-center sm:gap-4">
                                 <button
                                     className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500"
+                                    onClick={createAccount}
                                 >
                                     Create an account
                                 </button>
