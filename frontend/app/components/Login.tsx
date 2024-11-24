@@ -26,12 +26,24 @@ export default function Login() {
     };
 
     const createAccount = (e: React.MouseEvent<HTMLButtonElement>) => {
+        console.log(formData);
+        console.log(passwordMatch)
         if (formData.firstName != "" &&
             formData.lastName != "" &&
             validator.isEmail(formData.email) &&
-            passwordMatch == true
+            passwordMatch == false
         ) {
-            
+            console.log("Correct!!!")
+            fetch('http://localhost:8000/api/create_account', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+              })
+              .then(response => response.json())
+              .then(data => console.log(data))
+              .catch(error => console.error(error));
         }
     }
 
