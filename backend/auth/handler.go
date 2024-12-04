@@ -4,18 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"github.com/Leo7Deng/ChatApp/models"
 )
 
-type FormData struct {
-	FirstName       string `json:"firstName"`
-	LastName        string `json:"lastName"`
-	Email           string `json:"email"`
-	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirmPassword"`
-}
-
 func Handler(w http.ResponseWriter, r *http.Request) {
-	var account FormData
+	var account user.FormData
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {
 		// return HTTP 400 bad request

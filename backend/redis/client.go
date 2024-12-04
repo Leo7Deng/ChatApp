@@ -26,3 +26,5 @@ func RedisClient() {
 	}
 	fmt.Println("foo", val)
 }
+
+func 
