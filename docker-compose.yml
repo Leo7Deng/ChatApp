@@ -1,4 +1,15 @@
 services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: postgres_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
   redis:
     image: redis:latest
     container_name: redis
@@ -9,4 +20,5 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
 
 volumes:
+  postgres-data:
   redis-data: 
