@@ -6,7 +6,7 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password123
+      POSTGRES_PASSWORD: ${PSQL_PASSWORD}
       POSTGRES_DB: postgres_db
     volumes:
       - postgres-data:/var/lib/postgresql/data
