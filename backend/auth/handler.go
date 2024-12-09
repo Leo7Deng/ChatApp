@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"github.com/Leo7Deng/ChatApp/models"
+	"github.com/Leo7Deng/ChatApp/postgres"
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -16,4 +17,5 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Printf("First name is %s\n", account.FirstName)
 	}
+	postgres.CreateAccount(account)
 }

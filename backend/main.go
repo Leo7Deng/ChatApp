@@ -7,6 +7,7 @@ import (
 	"github.com/Leo7Deng/ChatApp/redis"
 	"github.com/Leo7Deng/ChatApp/middleware"
 	"github.com/Leo7Deng/ChatApp/auth"
+	"github.com/Leo7Deng/ChatApp/postgres"
 )
 
 type api struct {
@@ -32,8 +33,10 @@ func main() {
 		Handler: mux,
 	}
 	redis.RedisClient()
-
+	postgres.ConnectPSQL()
+	defer postgres.ClosePSQL()
 	// CORS for development
 	mux.HandleFunc("/api/create_account", middleware.AddCorsHeaders(auth.Handler))
 	log.Fatal(srv.ListenAndServe())
+	
 }

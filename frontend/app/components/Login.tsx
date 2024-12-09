@@ -13,19 +13,21 @@ export default function Login() {
         confirmPassword: ""
     });
 
-    const [passwordMatch, setPasswordMatch] = useState(true)
+    const [passwordMatch, setPasswordMatch] = useState(false)
 
     const confirmPassword = () => {
         if (formData.confirmPassword != "" && 
             formData.password !== formData.confirmPassword) {
-            setPasswordMatch(false);
+            setPasswordMatch(true);
         }
         else {
-            setPasswordMatch(true);
+            setPasswordMatch(false);
         }
     };
 
     const createAccount = (e: React.MouseEvent<HTMLButtonElement>) => {
+        console.log(formData);
+        console.log(passwordMatch)
         if (formData.firstName != "" &&
             formData.lastName != "" &&
             validator.isEmail(formData.email) &&
@@ -167,7 +169,6 @@ export default function Login() {
                                     onChange={
                                         (e) => setFormData({ ...formData, password: e.target.value })}
                                     className="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm"
-                                    onBlur={confirmPassword}
                                 />
                             </div>
 
@@ -180,7 +181,7 @@ export default function Login() {
                                     type="password"
                                     id="PasswordConfirmation"
                                     name="password_confirmation"
-                                    className={`mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm ${passwordMatch ? "" : "red-outline"
+                                    className={`mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm ${passwordMatch ? "red-outline" : ""
                                         }`}
                                     value={formData.confirmPassword}
                                     onChange={
