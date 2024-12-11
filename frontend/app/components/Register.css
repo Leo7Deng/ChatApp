@@ -1,0 +1,11 @@
+.left-panel {
+    position: absolute;
+    inset: 0px;
+    height: 100%;
+    width: 100%;
+    background-color: hsl(221, 83%, 53%);
+}
+
+.red-outline {
+    border-color: red;
+}

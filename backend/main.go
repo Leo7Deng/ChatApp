@@ -36,7 +36,8 @@ func main() {
 	postgres.ConnectPSQL()
 	defer postgres.ClosePSQL()
 	// CORS for development
-	mux.HandleFunc("/api/create_account", middleware.AddCorsHeaders(auth.Handler))
+	mux.HandleFunc("/api/register", middleware.AddCorsHeaders(auth.RegisterHandler))
+	mux.HandleFunc("/api/login", middleware.AddCorsHeaders(auth.LoginHandler))
 	log.Fatal(srv.ListenAndServe())
 	
 }

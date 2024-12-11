@@ -41,7 +41,6 @@ func ConnectPSQL() {
 		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
 		os.Exit(1)
 	}
-	defer pool.Close()
 	
 	fmt.Println("Successfully connected to database")
 }

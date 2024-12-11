@@ -1,27 +1,45 @@
 "use client"
 
-import "./Login.css"
+import "./Register.css"
 import React, { useState } from "react";
 import validator from "validator";
 
-export default function Login() {
-    const [loginData, setLoginData] = useState({
+export default function Register() {
+    const [registerData, setRegisterData] = useState({
+        firstName: "",
+        lastName: "",
         email: "",
         password: "",
+        confirmPassword: ""
     });
 
-    const loginAccount = (e: React.MouseEvent<HTMLButtonElement>) => {
-        console.log(loginData);
-        if (validator.isEmail(loginData.email) &&
-            loginData.password !== ""
+    const [passwordMatch, setPasswordMatch] = useState(false)
+
+    const confirmPassword = () => {
+        if (registerData.confirmPassword != "" && 
+            registerData.password !== registerData.confirmPassword) {
+            setPasswordMatch(true);
+        }
+        else {
+            setPasswordMatch(false);
+        }
+    };
+
+    const createAccount = (e: React.MouseEvent<HTMLButtonElement>) => {
+        console.log(registerData);
+        console.log(passwordMatch)
+        if (registerData.firstName != "" &&
+            registerData.lastName != "" &&
+            validator.isEmail(registerData.email) &&
+            passwordMatch == false
         ) {
             console.log("Correct!!!")
-            fetch('http://localhost:8000/api/login', {
+            fetch('http://localhost:8000/api/register', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(loginData)
+                body: JSON.stringify(registerData)
               })
               .then(response => response.json())
               .then(data => console.log(data))
@@ -94,6 +112,38 @@ export default function Login() {
                         </div>
 
                         <form action="#" className="mt-8 grid grid-cols-6 gap-6">
+                            <div className="col-span-6 sm:col-span-3">
+                                <label htmlFor="FirstName" className="block text-sm font-medium text-gray-700">
+                                    First Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="FirstName"
+                                    name="first_name"
+                                    value={registerData.firstName}
+                                    onChange={
+                                        (e) => setRegisterData({ ...registerData, firstName: e.target.value })}
+                                    className="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm"
+                                />
+                            </div>
+
+                            <div className="col-span-6 sm:col-span-3">
+                                <label htmlFor="LastName" className="block text-sm font-medium text-gray-700">
+                                    Last Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="LastName"
+                                    name="last_name"
+                                    value={registerData.lastName}
+                                    onChange={
+                                        (e) => setRegisterData({ ...registerData, lastName: e.target.value })}
+                                    className="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm"
+                                />
+                            </div>
+
                             <div className="col-span-6">
                                 <label htmlFor="Email" className="block text-sm font-medium text-gray-700"> Email </label>
 
@@ -101,38 +151,80 @@ export default function Login() {
                                     type="email"
                                     id="Email"
                                     name="email"
-                                    value={loginData.email}
+                                    value={registerData.email}
                                     onChange={
-                                        (e) => setLoginData({ ...loginData, email: e.target.value })}
+                                        (e) => setRegisterData({ ...registerData, email: e.target.value })}
                                     className="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm"
                                 />
                             </div>
 
-                            <div className="col-span-6 ">
+                            <div className="col-span-6 sm:col-span-3">
                                 <label htmlFor="Password" className="block text-sm font-medium text-gray-700"> Password </label>
 
                                 <input
                                     type="password"
                                     id="Password"
                                     name="password"
-                                    value={loginData.password}
+                                    value={registerData.password}
                                     onChange={
-                                        (e) => setLoginData({ ...loginData, password: e.target.value })}
+                                        (e) => setRegisterData({ ...registerData, password: e.target.value })}
                                     className="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm"
                                 />
+                            </div>
+
+                            <div className="col-span-6 sm:col-span-3">
+                                <label htmlFor="PasswordConfirmation" className="block text-sm font-medium text-gray-700">
+                                    Password Confirmation
+                                </label>
+
+                                <input
+                                    type="password"
+                                    id="PasswordConfirmation"
+                                    name="password_confirmation"
+                                    className={`mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm ${passwordMatch ? "red-outline" : ""
+                                        }`}
+                                    value={registerData.confirmPassword}
+                                    onChange={
+                                        (e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
+                                    onBlur={confirmPassword}
+                                />
+                            </div>
+
+                            <div className="col-span-6">
+                                <label htmlFor="MarketingAccept" className="flex gap-4">
+                                    <input
+                                        type="checkbox"
+                                        id="MarketingAccept"
+                                        name="marketing_accept"
+                                        className="size-5 rounded-md border-gray-200 bg-white shadow-sm"
+                                    />
+
+                                    <span className="text-sm text-gray-700">
+                                        I want to receive emails about events, product updates and company announcements.
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div className="col-span-6">
+                                <p className="text-sm text-gray-500">
+                                    By creating an account, you agree to our&nbsp;
+                                    <a href="#" className="text-gray-700 underline">terms and conditions</a>
+                                    &nbsp;and&nbsp;
+                                    <a href="#" className="text-gray-700 underline">privacy policy</a>.
+                                </p>
                             </div>
 
                             <div className="col-span-6 sm:flex sm:items-center sm:gap-4">
                                 <button
                                     className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500"
-                                    onClick={loginAccount}
+                                    onClick={createAccount}
                                 >
-                                    Login
+                                    Create an account
                                 </button>
 
                                 <p className="mt-4 text-sm text-gray-500 sm:mt-0">
-                                    Need an account?&nbsp;
-                                    <a href="/register" className="text-gray-700 underline">Register</a>.
+                                    Already have an account?&nbsp;
+                                    <a href="/login" className="text-gray-700 underline">Log in</a>.
                                 </p>
                             </div>
                         </form>
