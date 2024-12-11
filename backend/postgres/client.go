@@ -45,7 +45,7 @@ func ConnectPSQL() {
 	fmt.Println("Successfully connected to database")
 }
 
-func CreateAccount(data user.FormData) {
+func CreateAccount(data user.RegisterData) {
 	// Acquire a connection from the pool
 	conn, err := pool.Acquire(context.Background())
 	if err != nil {
@@ -67,6 +67,24 @@ func CreateAccount(data user.FormData) {
 		os.Exit(1)
 	}
 	fmt.Println("Successfully created account")
+}
+
+func FindAccount(data user.LoginData) bool {
+	var email string
+	var password string
+	err := pool.QueryRow(
+		context.Background(),
+		"SELECT email, password FROM users WHERE email = $1",
+		data.Email,
+	).Scan(&email, &password)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to find account: %v\n", err)
+		return false
+	}
+	if email == data.Email && password == data.Password {
+		return true
+	}
+	return false
 }
 
 func ClosePSQL() {

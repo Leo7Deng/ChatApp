@@ -9,7 +9,7 @@ import (
 )
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	var account user.FormData
+	var account user.RegisterData
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {
 		// return HTTP 400 bad request
@@ -22,7 +22,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	var account user.FormData
+	var account user.LoginData
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {
 		// return HTTP 400 bad request
@@ -30,12 +30,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Printf("Logged in account with email: %s\n", account.Email)
 	}
-	// isLoggedIn := postgres.Login(account)
-	isLoggedIn := true
+	isLoggedIn := postgres.FindAccount(account)
 	if isLoggedIn {
 		w.WriteHeader(http.StatusOK)
+		fmt.Printf("Logged in successfully")
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Printf("Unauthorized login")
 	}
-	fmt.Println("LoginHandler")
 }
