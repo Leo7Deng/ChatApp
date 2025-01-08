@@ -13,12 +13,17 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {
 		// return HTTP 400 bad request
-		fmt.Printf("HTTP 400 bad request")
+		fmt.Printf("HTTP 400 bad request\n")
 	} else {
 		fmt.Printf("Registered account with email: %s\n", account.Email)
 	}
-	postgres.CreateAccount(account)
-	w.WriteHeader(http.StatusOK)
+	if postgres.CreateAccount(account) {
+		fmt.Printf("Account created successfully\n")
+		w.WriteHeader(http.StatusOK)
+	} else {
+		fmt.Printf("Account creation failed\n")
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,16 +31,16 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {
 		// return HTTP 400 bad request
-		fmt.Printf("HTTP 400 bad request")
+		fmt.Printf("HTTP 400 bad request\n")
 	} else {
 		fmt.Printf("Logged in account with email: %s\n", account.Email)
 	}
 	isLoggedIn := postgres.FindAccount(account)
 	if isLoggedIn {
 		w.WriteHeader(http.StatusOK)
-		fmt.Printf("Logged in successfully")
+		fmt.Printf("Logged in successfully\n")
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
-		fmt.Printf("Unauthorized login")
+		fmt.Printf("Unauthorized login\n")
 	}
 }

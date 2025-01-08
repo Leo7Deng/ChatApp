@@ -14,9 +14,10 @@ export default function Register() {
     });
 
     const [passwordMatch, setPasswordMatch] = useState(false)
+    const [duplicateEmail, setDuplicateEmail] = useState(false)
 
     const confirmPassword = () => {
-        if (registerData.confirmPassword != "" && 
+        if (registerData.confirmPassword != "" &&
             registerData.password !== registerData.confirmPassword) {
             setPasswordMatch(true);
         }
@@ -26,6 +27,7 @@ export default function Register() {
     };
 
     const createAccount = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
         console.log(registerData);
         console.log(passwordMatch)
         if (registerData.firstName != "" &&
@@ -37,13 +39,20 @@ export default function Register() {
             fetch('http://localhost:8000/api/register', {
                 method: 'POST',
                 headers: {
-                  'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(registerData)
-              })
-              .then(response => response.json())
-              .then(data => console.log(data))
-              .catch(error => console.error(error));
+            })
+                .then(response => console.log(response))
+                .then(data => {
+                    setDuplicateEmail(false);
+                    console.log(data);
+                    window.location.href = '/dashboard';
+                })
+                .catch(error => {
+                    console.log(error);
+                    setDuplicateEmail(true);
+                })
         }
     }
 
@@ -145,7 +154,7 @@ export default function Register() {
                             </div>
 
                             <div className="col-span-6">
-                                <label htmlFor="Email" className="block text-sm font-medium text-gray-700"> Email </label>
+                                <label htmlFor="Email" className="block text-sm font-medium text-gray-700"> Email {duplicateEmail && <span className="invalid-text"> - Username already taken</span>}</label>
 
                                 <input
                                     type="email"

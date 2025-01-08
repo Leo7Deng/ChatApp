@@ -45,7 +45,7 @@ func ConnectPSQL() {
 	fmt.Println("Successfully connected to database")
 }
 
-func CreateAccount(data user.RegisterData) {
+func CreateAccount(data user.RegisterData) bool {
 	// Acquire a connection from the pool
 	conn, err := pool.Acquire(context.Background())
 	if err != nil {
@@ -64,9 +64,10 @@ func CreateAccount(data user.RegisterData) {
 	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to insert into database: %v\n", err)
-		os.Exit(1)
+		return false
 	}
 	fmt.Println("Successfully created account")
+	return true
 }
 
 func FindAccount(data user.LoginData) bool {

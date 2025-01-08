@@ -9,3 +9,9 @@
 .red-outline {
     border-color: red;
 }
+
+.invalid-text {
+    color: red;
+    font-weight: normal;
+    font-style: italic;
+}

@@ -28,7 +28,7 @@ export default function Login() {
                 .then(data => {
                     console.log(data)
                     // localStorage.setItem('token', data.token);
-                    setLoginError(true);
+                    setLoginError(false);
                     window.location.href = '/dashboard';
                 })
                 .catch (error => {
