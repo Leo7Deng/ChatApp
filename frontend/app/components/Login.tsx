@@ -22,12 +22,12 @@ export default function Login() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(loginData)
+                body: JSON.stringify(loginData),
+                credentials: 'include'
             })
-                .then(response => console.log(response))
+                .then(response => response.json())
                 .then(data => {
                     console.log(data);
-                    // localStorage.setItem('token', data.token);
                     setLoginError(false);
                     window.location.href = '/dashboard';
                 })

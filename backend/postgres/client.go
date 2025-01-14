@@ -106,8 +106,8 @@ func InsertRefreshToken(email string, token uuid.UUID) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to select user ID: %v\n", err)
 	}
-
-	expiryDate := time.Now().AddDate(0, 1, 0).UTC()
+	
+	expiryDate := time.Now().AddDate(0, 0, 30).UTC()
 	_, err = conn.Exec(
 		context.Background(),
 		"INSERT INTO refresh_tokens (user_id, token, expires) VALUES ($1, $2, $3)",

@@ -3,9 +3,9 @@ package auth
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"github.com/Leo7Deng/ChatApp/models"
 	"github.com/Leo7Deng/ChatApp/postgres"
+	"net/http"
 )
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
@@ -18,10 +18,21 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if postgres.CreateAccount(account) {
 		fmt.Printf("Account created successfully\n")
-		CreateRefreshToken(account.Email)
+		refreshToken := CreateRefreshToken(account.Email)
+		cookie := http.Cookie{
+			Name:     "refresh-token",
+			Value:    refreshToken,
+			Path:     "/",
+			Secure:   true,
+			HttpOnly: true,
+			MaxAge:   30 * 24 * 60 * 60, // 30 days
+		}
+		http.SetCookie(w, &cookie)
+		json.NewEncoder(w).Encode("Account created\n")
 		w.WriteHeader(http.StatusOK)
 	} else {
 		fmt.Printf("Account creation failed\n")
+		json.NewEncoder(w).Encode("Account creation failed\n")
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
@@ -36,12 +47,21 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	isLoggedIn := postgres.FindAccount(account)
 	if isLoggedIn {
-		w.WriteHeader(http.StatusOK)
 		fmt.Printf("Logged in successfully\n")
-		CreateRefreshToken(account.Email)
-		json.NewEncoder(w).Encode(account)
+		refreshToken := CreateRefreshToken(account.Email)
+		cookie := http.Cookie{
+			Name:     "refresh-token",
+			Value:    refreshToken,
+			Path:     "/",
+			Secure:   true,
+			HttpOnly: true,
+			MaxAge:   30 * 24 * 60 * 60, // 30 days
+		}
+		http.SetCookie(w, &cookie)
+		json.NewEncoder(w).Encode("Logged in\n")
+		w.WriteHeader(http.StatusOK)
 	} else {
-		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Printf("Unauthorized login\n")
+		w.WriteHeader(http.StatusUnauthorized)
 	}
 }
