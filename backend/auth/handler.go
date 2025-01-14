@@ -39,6 +39,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if isLoggedIn {
 		w.WriteHeader(http.StatusOK)
 		fmt.Printf("Logged in successfully\n")
+		CreateRefreshToken(account.Email)
+		json.NewEncoder(w).Encode(account)
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Printf("Unauthorized login\n")

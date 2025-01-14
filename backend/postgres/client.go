@@ -88,6 +88,10 @@ func FindAccount(data user.LoginData) bool {
 	return false
 }
 
+func InsertRefreshToken(email string, token string) {
+	
+}
+
 func ClosePSQL() {
 	if pool != nil {
 		pool.Close()
