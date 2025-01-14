@@ -12,13 +12,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var account user.RegisterData
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {
-		// return HTTP 400 bad request
 		fmt.Printf("HTTP 400 bad request\n")
 	} else {
 		fmt.Printf("Registered account with email: %s\n", account.Email)
 	}
 	if postgres.CreateAccount(account) {
 		fmt.Printf("Account created successfully\n")
+		CreateRefreshToken(account.Email)
 		w.WriteHeader(http.StatusOK)
 	} else {
 		fmt.Printf("Account creation failed\n")
@@ -30,7 +30,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var account user.LoginData
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {
-		// return HTTP 400 bad request
 		fmt.Printf("HTTP 400 bad request\n")
 	} else {
 		fmt.Printf("Logged in account with email: %s\n", account.Email)

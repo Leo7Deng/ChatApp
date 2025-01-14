@@ -1,13 +1,15 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
 	"os"
-	"context"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"time"
 	"github.com/Leo7Deng/ChatApp/models"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
-  )
+)
 
 var pool *pgxpool.Pool
 
@@ -46,7 +48,6 @@ func ConnectPSQL() {
 }
 
 func CreateAccount(data user.RegisterData) bool {
-	// Acquire a connection from the pool
 	conn, err := pool.Acquire(context.Background())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
@@ -88,8 +89,35 @@ func FindAccount(data user.LoginData) bool {
 	return false
 }
 
-func InsertRefreshToken(email string, token string) {
-	
+func InsertRefreshToken(email string, token uuid.UUID) {
+	conn, err := pool.Acquire(context.Background())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Release()
+
+	var userID int
+	err = conn.QueryRow(
+		context.Background(),
+		"SELECT id FROM users WHERE email = $1",
+		email,
+	).Scan(&userID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to select user ID: %v\n", err)
+	}
+
+	expiryDate := time.Now().AddDate(0, 1, 0).UTC()
+	_, err = conn.Exec(
+		context.Background(),
+		"INSERT INTO refresh_tokens (user_id, token, expires) VALUES ($1, $2, $3)",
+		userID,
+		token,
+		expiryDate,
+	)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to insert into database: %v\n", err)
+	}
 }
 
 func ClosePSQL() {

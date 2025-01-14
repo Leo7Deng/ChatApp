@@ -9,6 +9,5 @@ import (
 func CreateRefreshToken(accountEmail string) {
 	refreshToken := uuid.New()
     fmt.Println(refreshToken.String())
-	postgres.InsertRefreshToken(accountEmail, refreshToken.String())
-	
+	postgres.InsertRefreshToken(accountEmail, refreshToken)
 }
