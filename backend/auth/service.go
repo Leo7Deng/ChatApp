@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 	"github.com/Leo7Deng/ChatApp/postgres"
 	"github.com/Leo7Deng/ChatApp/redis"
-	"github.com/google/uuid"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 func CreateRefreshToken(userID int) (string, error) {
@@ -19,21 +20,18 @@ func CreateRefreshToken(userID int) (string, error) {
 }
 
 func CreateAccessToken(userID int) (string, error) {
-	var (
-		key []byte
-		t   *jwt.Token
-		s   string
-		err error
-	  )
-	  
-	  key = []byte(os.Getenv("TOKEN_SECRET_KEY"))
-	  t = jwt.New(jwt.SigningMethodHS256) 
-	  s, err = t.SignedString(key)
+	secretKey := []byte(os.Getenv("TOKEN_SECRET_KEY"))
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"user_id": userID,
+			"exp":     time.Now().Add(time.Minute * 15).Unix(), // 15 minutes
+		})
 
-	  if err != nil {
+	tokenString, err := token.SignedString(secretKey)
+	if err != nil {
 		return "", err
-	  } else {
-		fmt.Println("User " + strconv.Itoa(userID) + "'s Access Token: " + s)
-		return s, nil
-	  }
+	} else {
+		fmt.Println("User " + strconv.Itoa(userID) + "'s Access Token: " + tokenString)
+		return tokenString, nil
+	}
 }
