@@ -28,12 +28,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			MaxAge:   30 * 24 * 60 * 60, // 30 days
 		}
 		http.SetCookie(w, &cookie)
-		json.NewEncoder(w).Encode("Account created\n")
 		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode("Account created\n")
 	} else {
 		fmt.Printf("Account creation failed\n")
-		json.NewEncoder(w).Encode("Account creation failed\n")
 		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("Account creation failed\n")
 	}
 }
 
@@ -58,10 +58,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			MaxAge:   30 * 24 * 60 * 60, // 30 days
 		}
 		http.SetCookie(w, &cookie)
-		json.NewEncoder(w).Encode("Logged in\n")
 		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode("Logged in\n")
 	} else {
-		fmt.Printf("Unauthorized login\n")
 		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Printf("Unauthorized login\n")
 	}
 }
