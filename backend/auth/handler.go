@@ -24,16 +24,19 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("Account creation failed\n")
 	} else {
 		fmt.Printf("Account created successfully\n")
-		refreshToken := CreateRefreshToken(userID)
-		cookie := http.Cookie{
-			Name:     "refresh-token",
-			Value:    refreshToken,
-			Path:     "/",
-			Secure:   true,
-			HttpOnly: true,
-			MaxAge:   30 * 24 * 60 * 60, // 30 days
+
+		refreshToken, err := CreateRefreshToken(userID)
+		if err != nil {
+			fmt.Printf("Failed to create refresh token\n")
 		}
-		http.SetCookie(w, &cookie)
+		setRefreshTokenCookie(w, refreshToken)
+
+		accessToken, err := CreateAccessToken(userID)
+		if err != nil {
+			fmt.Printf("Failed to create access token\n")
+		}
+		setAccessTokenCookie(w, accessToken)
+
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode("Account created\n")
 	}
@@ -54,17 +57,42 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Unauthorized login\n")
 	} else {
 		fmt.Printf("Logged in successfully\n")
-		refreshToken := CreateRefreshToken(userID)
-		cookie := http.Cookie{
-			Name:     "refresh-token",
-			Value:    refreshToken,
-			Path:     "/",
-			Secure:   true,
-			HttpOnly: true,
-			MaxAge:   30 * 24 * 60 * 60, // 30 days
+
+		refreshToken, err := CreateRefreshToken(userID)
+		if err != nil {
+			fmt.Printf("Failed to create refresh token\n")
 		}
-		http.SetCookie(w, &cookie)
+		setRefreshTokenCookie(w, refreshToken)
+
+		accessToken, err := CreateAccessToken(userID)
+		if err != nil {
+			fmt.Printf("Failed to create access token\n")
+		}
+		setAccessTokenCookie(w, accessToken)
+
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode("Logged in\n")
 	}
+}
+
+func setRefreshTokenCookie(w http.ResponseWriter, token string) {
+    http.SetCookie(w, &http.Cookie{
+        Name:     "refresh-token",
+        Value:    token,
+        Path:     "/",
+        Secure:   true,
+        HttpOnly: true,
+        MaxAge:   30 * 24 * 60 * 60, // 30 days
+    })
+}
+
+func setAccessTokenCookie(w http.ResponseWriter, token string) {
+    http.SetCookie(w, &http.Cookie{
+        Name:     "access-token",
+        Value:    token,
+        Path:     "/",
+        Secure:   true,
+        HttpOnly: true,
+        MaxAge:   15 * 60, // 15 minutes
+    })
 }

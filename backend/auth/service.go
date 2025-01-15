@@ -2,31 +2,38 @@ package auth
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"github.com/Leo7Deng/ChatApp/postgres"
 	"github.com/Leo7Deng/ChatApp/redis"
 	"github.com/google/uuid"
-	// "github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-func CreateRefreshToken(userID int) string {
+func CreateRefreshToken(userID int) (string, error) {
 	refreshToken := uuid.New()
 	fmt.Println("User " + strconv.Itoa(userID) + "'s Refresh Token: " + refreshToken.String())
 	postgres.InsertRefreshToken(userID, refreshToken)
 	redis.InsertRefreshToken(userID, refreshToken.String())
-	return refreshToken.String()
+	return refreshToken.String(), nil
 }
 
-// func CreateAccessToken(accountEmail string) string {
-// 	var (
-// 		key []byte
-// 		t   *jwt.Token
-// 		s   string
-// 	  )
+func CreateAccessToken(userID int) (string, error) {
+	var (
+		key []byte
+		t   *jwt.Token
+		s   string
+		err error
+	  )
 	  
-// 	  key = 
-// 	  /* Load key from somewhere, for example an environment variable */
-// 	//   add user id as jwt claim
-// 	  t = jwt.New(jwt.SigningMethodHS256) 
-// 	  s = t.SignedString(key)
-// }
+	  key = []byte(os.Getenv("TOKEN_SECRET_KEY"))
+	  t = jwt.New(jwt.SigningMethodHS256) 
+	  s, err = t.SignedString(key)
+
+	  if err != nil {
+		return "", err
+	  } else {
+		fmt.Println("User " + strconv.Itoa(userID) + "'s Access Token: " + s)
+		return s, nil
+	  }
+}

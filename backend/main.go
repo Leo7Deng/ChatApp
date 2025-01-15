@@ -8,6 +8,7 @@ import (
 	"github.com/Leo7Deng/ChatApp/middleware"
 	"github.com/Leo7Deng/ChatApp/auth"
 	"github.com/Leo7Deng/ChatApp/postgres"
+	"github.com/joho/godotenv"
 )
 
 type api struct {
@@ -24,6 +25,12 @@ func addCorsHeader(w http.ResponseWriter) {
 
 
 func main() {
+	var err error
+	err = godotenv.Load()
+    if err != nil {
+		fmt.Printf("Error loading .env file: %v", err)
+    }
+
 	fmt.Println("Backend listening on port 8000")
 	api := &api{addr: ":8000"}
 	mux := http.NewServeMux()
@@ -39,5 +46,4 @@ func main() {
 	mux.HandleFunc("/api/register", middleware.AddCorsHeaders(auth.RegisterHandler))
 	mux.HandleFunc("/api/login", middleware.AddCorsHeaders(auth.LoginHandler))
 	log.Fatal(srv.ListenAndServe())
-	
 }

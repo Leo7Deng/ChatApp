@@ -5,19 +5,12 @@ import (
 	"fmt"
 	"os"
 	"time"
-
-	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 )
 
 var client *redis.Client
 
 func RedisClient() {
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Printf("Error loading .env file: %v", err)
-	}
-
 	client = redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: os.Getenv("REDIS_PASSWORD"), 
@@ -26,7 +19,7 @@ func RedisClient() {
 	})
 	ctx := context.Background()
 
-	err = client.Set(ctx, "foo", "bar", 0).Err()
+	err := client.Set(ctx, "foo", "bar", 0).Err()
 	if err != nil {
 		panic(err)
 	}

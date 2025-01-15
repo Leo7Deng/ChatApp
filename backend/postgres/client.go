@@ -8,18 +8,11 @@ import (
 	"github.com/Leo7Deng/ChatApp/models"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joho/godotenv"
 )
 
 var pool *pgxpool.Pool
 
 func ConnectPSQL() {
-	var err error
-	err = godotenv.Load()
-    if err != nil {
-		fmt.Printf("Error loading .env file: %v", err)
-    }
-
 	db_url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		os.Getenv("PSQL_USER"),
 		os.Getenv("PSQL_PASSWORD"),
