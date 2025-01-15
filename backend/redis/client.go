@@ -39,11 +39,11 @@ func RedisClient() {
 	fmt.Println("Redis client connected")
 }
 
-func InsertRefreshToken(userEmail string, refreshToken string) bool {
+func InsertRefreshToken(userID int, refreshToken string) bool {
 	ctx := context.Background()
-	err := client.Set(ctx, refreshToken, userEmail, 30 * 24 * time.Hour).Err()
+	err := client.Set(ctx, refreshToken, userID, 30 * 24 * time.Hour).Err()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to insert into database: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Unable to insert into Redis: %v\n", err)
 		return false
 	}
 	fmt.Println("Successfully inserted refresh token")

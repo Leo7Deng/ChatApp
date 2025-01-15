@@ -32,7 +32,7 @@ func ConnectPSQL() {
 
 	config, err := pgxpool.ParseConfig(db_url)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to parse database URL: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Unable to parse PSQL URL: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -44,68 +44,61 @@ func ConnectPSQL() {
 		os.Exit(1)
 	}
 	
-	fmt.Println("Successfully connected to database")
+	fmt.Println("Successfully connected to PSQL")
 }
 
-func CreateAccount(data user.RegisterData) bool {
-	conn, err := pool.Acquire(context.Background())
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
-		os.Exit(1)
-	}
-	defer conn.Release()
+func CreateAccount(data user.RegisterData) (int, error) {
+	// conn, err := pool.Acquire(context.Background())
+	// if err != nil {
+	// 	fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
+	// 	os.Exit(1)
+	// }
+	// defer conn.Release()
+	// _, err := conn.Exec(
 
-	_, err = conn.Exec(
+	var userID int
+	err := pool.QueryRow(
 		context.Background(),
-		"INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4)",
+		"INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id",
 		data.FirstName,
 		data.LastName,
 		data.Email,
 		data.Password,
-	)
+	).Scan(&userID)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to insert into database: %v\n", err)
-		return false
+		fmt.Fprintf(os.Stderr, "Unable to insert into PSQL: %v\n", err)
+		return 0, err
 	}
 	fmt.Println("Successfully created account")
-	return true
+	return userID, nil
 }
 
-func FindAccount(data user.LoginData) bool {
+func FindAccount(data user.LoginData) (int, error) {
+	var id int
 	var email string
 	var password string
 	err := pool.QueryRow(
 		context.Background(),
-		"SELECT email, password FROM users WHERE email = $1",
+		"SELECT id, email, password FROM users WHERE email = $1",
 		data.Email,
-	).Scan(&email, &password)
+	).Scan(&id, &email, &password)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to find account: %v\n", err)
-		return false
+		return 0, err
 	}
 	if email == data.Email && password == data.Password {
-		return true
+		return id, nil
 	}
-	return false
+	return 0, err
 }
 
-func InsertRefreshToken(email string, token uuid.UUID) {
+func InsertRefreshToken(userID int, token uuid.UUID) {
 	conn, err := pool.Acquire(context.Background())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
 		os.Exit(1)
 	}
 	defer conn.Release()
-
-	var userID int
-	err = conn.QueryRow(
-		context.Background(),
-		"SELECT id FROM users WHERE email = $1",
-		email,
-	).Scan(&userID)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to select user ID: %v\n", err)
-	}
 	
 	expiryDate := time.Now().AddDate(0, 0, 30).UTC()
 	_, err = conn.Exec(
@@ -116,13 +109,13 @@ func InsertRefreshToken(email string, token uuid.UUID) {
 		expiryDate,
 	)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to insert into database: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Unable to insert into PSQL: %v\n", err)
 	}
 }
 
 func ClosePSQL() {
 	if pool != nil {
 		pool.Close()
-		fmt.Println("Database connection closed")
+		fmt.Println("PSQL connection closed")
 	}
 }
