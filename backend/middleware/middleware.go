@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -28,8 +27,7 @@ func AddCorsHeaders(handler http.HandlerFunc) http.HandlerFunc {
 }
 
 type contextKey string
-
-const userIDKey contextKey = "user_id"
+const UserIDKey contextKey = "user_id"
 
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
