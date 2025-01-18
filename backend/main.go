@@ -7,6 +7,7 @@ import (
 	"github.com/Leo7Deng/ChatApp/redis"
 	"github.com/Leo7Deng/ChatApp/middleware"
 	"github.com/Leo7Deng/ChatApp/auth"
+	"github.com/Leo7Deng/ChatApp/dashboard"
 	"github.com/Leo7Deng/ChatApp/postgres"
 	"github.com/joho/godotenv"
 )
@@ -35,5 +36,12 @@ func main() {
 	defer postgres.ClosePSQL()
 	mux.HandleFunc("/api/register", middleware.AddCorsHeaders(auth.RegisterHandler))
 	mux.HandleFunc("/api/login", middleware.AddCorsHeaders(auth.LoginHandler))
+	mux.Handle("/api/dashboard",
+    middleware.AddCorsHeaders(
+        middleware.AuthMiddleware(
+            http.HandlerFunc(dashboard.DashboardHandler),
+        ),
+    ),
+)
 	log.Fatal(srv.ListenAndServe())
 }
