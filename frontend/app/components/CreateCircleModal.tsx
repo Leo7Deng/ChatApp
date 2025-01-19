@@ -6,6 +6,23 @@ interface CreateCircleModalProps {
 }
 
 function CreateCircleModal({ isOpen, setOpen }: CreateCircleModalProps) {
+    interface CircleData {
+        circle_name: string;
+    }
+
+    const createCircle = (circle_name: string): void => {
+        const data: CircleData = {
+            circle_name: circle_name
+        };
+        fetch('/api/create-circle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -18,7 +35,6 @@ function CreateCircleModal({ isOpen, setOpen }: CreateCircleModalProps) {
                             className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm text-black"
                             placeholder="Circle Name"
                         />
-
                     </div>
                 </div>
 
@@ -26,7 +42,11 @@ function CreateCircleModal({ isOpen, setOpen }: CreateCircleModalProps) {
                     <button
                         type="submit"
                         className="inline-block rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white"
-                        onClick={() => setOpen(false)}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setOpen(false);
+                            createCircle(document.querySelector('input')?.value || '');
+                        }}
                     >
                         Create
                     </button>

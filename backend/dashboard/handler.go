@@ -10,7 +10,8 @@ import (
 
 func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Start of dashboard handler")
-	// userID := r.Context().Value(middleware.UserIDKey).(string)
+	userID := r.Context().Value(middleware.UserIDKey).(string)
+	fmt.Println("User ID: " + userID)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Logged in\n")
 }

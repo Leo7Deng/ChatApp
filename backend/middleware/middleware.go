@@ -80,7 +80,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		userIDStr := strconv.FormatFloat(userID, 'f', -1, 64)
 
 		// Add user ID to context
-		ctx := context.WithValue(r.Context(), userIDKey, userIDStr)
+		ctx := context.WithValue(r.Context(), UserIDKey, userIDStr)
 		fmt.Println("Authenticated user with ID: " + userIDStr)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
