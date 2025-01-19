@@ -41,6 +41,22 @@ export default function Dashboard() {
         }
     };
 
+    const ws = new WebSocket("ws://localhost:8000/ws");
+
+    ws.onopen = () => {
+        console.log("Connected to WebSocket");
+        ws.send(JSON.stringify({ user_id: "123", content: "Hello World!" }));
+    };
+
+    ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        console.log("Received:", message);
+    };
+
+    ws.onclose = () => {
+        console.log("WebSocket connection closed");
+    };
+
     return (
         <div>
             <div className="flex h-screen w-16 flex-col justify-between border-e bg-white">
@@ -291,7 +307,7 @@ export default function Dashboard() {
                         <CreateCircleModal isOpen={openModal} setOpen={() => setOpenModal(false)} />
                     </div>
                 </div>}
-                </div>
+            </div>
         </div>
     )
 }

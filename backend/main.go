@@ -48,8 +48,6 @@ func main() {
 			),
 		),
 	)
-	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		websockets.ServeWs(hub, w, r)
-	})
+	mux.HandleFunc("/ws", middleware.AddCorsHeaders(websockets.ServeWs(hub)))
 	log.Fatal(srv.ListenAndServe())
 }
