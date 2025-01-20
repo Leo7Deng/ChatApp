@@ -42,3 +42,22 @@ func InsertRefreshToken(userID int, refreshToken string) bool {
 	fmt.Println("Successfully inserted refresh token")
 	return true
 }
+
+func CloseRedis() {
+	err := client.Close()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to close Redis connection: %v\n", err)
+	}
+	fmt.Println("Redis connection closed")
+}
+
+func DeleteTable() bool {
+	ctx := context.Background()
+	err := client.FlushDB(ctx).Err()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to delete table: %v\n", err)
+		return false
+	}
+	fmt.Println("Successfully deleted table")
+	return true
+}

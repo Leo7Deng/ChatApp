@@ -32,6 +32,8 @@ func main() {
 		Handler: mux,
 	}
 	redis.RedisClient()
+	defer redis.CloseRedis()
+
 	postgres.ConnectPSQL()
 	defer postgres.ClosePSQL()
 
