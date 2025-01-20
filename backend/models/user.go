@@ -1,4 +1,4 @@
-package user
+package models
 
 type RegisterData struct {
 	FirstName       string `json:"firstName"`

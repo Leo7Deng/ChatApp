@@ -9,14 +9,14 @@ import (
 )
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	var account user.RegisterData
+	var account models.RegisterData
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {
 		fmt.Printf("HTTP 400 bad request\n")
 	} else {
 		fmt.Printf("Registered account with email: %s\n", account.Email)
 	}
-	var userID int
+	var userID string
 	userID, err = postgres.CreateAccount(account)
 	if err != nil {
 		fmt.Printf("Account creation failed\n")
@@ -43,14 +43,14 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	var account user.LoginData
+	var account models.LoginData
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {
 		fmt.Printf("HTTP 400 bad request\n")
 	} else {
 		fmt.Printf("Logged in account with email: %s\n", account.Email)
 	}
-	var userID int
+	var userID string
 	userID, err = postgres.FindAccount(account)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)

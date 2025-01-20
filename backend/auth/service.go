@@ -3,7 +3,6 @@ package auth
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"time"
 	"github.com/Leo7Deng/ChatApp/postgres"
 	"github.com/Leo7Deng/ChatApp/redis"
@@ -11,15 +10,15 @@ import (
 	"github.com/google/uuid"
 )
 
-func CreateRefreshToken(userID int) (string, error) {
+func CreateRefreshToken(userID string) (string, error) {
 	refreshToken := uuid.New()
-	fmt.Println("User " + strconv.Itoa(userID) + "'s Refresh Token: " + refreshToken.String())
+	fmt.Println("User " + userID + "'s Refresh Token: " + refreshToken.String())
 	postgres.InsertRefreshToken(userID, refreshToken)
 	redis.InsertRefreshToken(userID, refreshToken.String())
 	return refreshToken.String(), nil
 }
 
-func CreateAccessToken(userID int) (string, error) {
+func CreateAccessToken(userID string) (string, error) {
 	secretKey := []byte(os.Getenv("TOKEN_SECRET_KEY"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
@@ -31,7 +30,7 @@ func CreateAccessToken(userID int) (string, error) {
 	if err != nil {
 		return "", err
 	} else {
-		fmt.Println("User " + strconv.Itoa(userID) + "'s Access Token: " + tokenString)
+		fmt.Println("User " + userID + "'s Access Token: " + tokenString)
 		return tokenString, nil
 	}
 }

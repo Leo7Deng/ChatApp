@@ -23,8 +23,11 @@ func RedisClient() {
 	if err != nil {
 		panic(err)
 	}
-
 	_, err = client.Get(ctx, "foo").Result()
+	if err != nil {
+		panic(err)
+	}
+	_, err = client.Del(ctx, "foo").Result()
 	if err != nil {
 		panic(err)
 	}
@@ -32,9 +35,10 @@ func RedisClient() {
 	fmt.Println("Redis client connected")
 }
 
-func InsertRefreshToken(userID int, refreshToken string) bool {
+func InsertRefreshToken(userID string, refreshToken string) bool {
 	ctx := context.Background()
-	err := client.Set(ctx, refreshToken, userID, 30 * 24 * time.Hour).Err()
+	key := fmt.Sprintf("refresh_token:%s", refreshToken)
+	err := client.Set(ctx, key, userID, 30 * 24 * time.Hour).Err()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to insert into Redis: %v\n", err)
 		return false

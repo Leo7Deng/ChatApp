@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -71,17 +70,16 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		
-		userID, ok := claims["user_id"].(float64)
+		userID, ok := claims["user_id"].(string)
 		if !ok {
 			fmt.Println("4")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		userIDStr := strconv.FormatFloat(userID, 'f', -1, 64)
 
 		// Add user ID to context
-		ctx := context.WithValue(r.Context(), UserIDKey, userIDStr)
-		fmt.Println("Authenticated user with ID: " + userIDStr)
+		ctx := context.WithValue(r.Context(), UserIDKey, userID)
+		fmt.Println("Authenticated user with ID: " + userID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
