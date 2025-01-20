@@ -37,10 +37,11 @@ func ConnectPSQL() {
 		os.Exit(1)
 	}
 	
+	
 	fmt.Println("Successfully connected to PSQL")
 }
 
-func CreateAccount(data user.RegisterData) (int, error) {
+func CreateAccount(data models.RegisterData) (string, error) {
 	// conn, err := pool.Acquire(context.Background())
 	// if err != nil {
 	// 	fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
@@ -49,7 +50,7 @@ func CreateAccount(data user.RegisterData) (int, error) {
 	// defer conn.Release()
 	// _, err := conn.Exec(
 
-	var userID int
+	var userID string
 	err := pool.QueryRow(
 		context.Background(),
 		"INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id",
@@ -60,14 +61,14 @@ func CreateAccount(data user.RegisterData) (int, error) {
 	).Scan(&userID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to insert into PSQL: %v\n", err)
-		return 0, err
+		return "", err
 	}
 	fmt.Println("Successfully created account")
 	return userID, nil
 }
 
-func FindAccount(data user.LoginData) (int, error) {
-	var id int
+func FindAccount(data models.LoginData) (string, error) {
+	var id string
 	var email string
 	var password string
 	err := pool.QueryRow(
@@ -77,15 +78,15 @@ func FindAccount(data user.LoginData) (int, error) {
 	).Scan(&id, &email, &password)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to find account: %v\n", err)
-		return 0, err
+		return "", err
 	}
 	if email == data.Email && password == data.Password {
 		return id, nil
 	}
-	return 0, err
+	return "", err
 }
 
-func InsertRefreshToken(userID int, token uuid.UUID) {
+func InsertRefreshToken(userID string, token uuid.UUID) {
 	conn, err := pool.Acquire(context.Background())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
@@ -105,6 +106,50 @@ func InsertRefreshToken(userID int, token uuid.UUID) {
 		fmt.Fprintf(os.Stderr, "Unable to insert into PSQL: %v\n", err)
 	}
 }
+
+func GetUserCircles(userID string) ([]models.Circle, error) {
+	ctx := context.Background()
+	conn, err := pool.Acquire(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
+		return nil, err
+	}
+	defer conn.Release()
+
+	rows, err := conn.Query(
+		ctx,
+		`
+		SELECT c.id, c.name, c.created_at
+		FROM circles c
+		INNER JOIN users_circles uc ON c.id = uc.circle_id
+		WHERE uc.user_id = $1;
+		`,
+		userID,
+	)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to query circles: %v\n", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var circles []models.Circle
+	for rows.Next() {
+		var circle models.Circle
+		err := rows.Scan(&circle.ID, &circle.Name, &circle.CreatedAt)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to scan circle row: %v\n", err)
+			return nil, err
+		}
+		circles = append(circles, circle)
+	}
+
+	if rows.Err() != nil {
+		fmt.Fprintf(os.Stderr, "Error during rows iteration: %v\n", rows.Err())
+		return nil, rows.Err()
+	}
+	return circles, nil
+}
+
 
 func ClosePSQL() {
 	if pool != nil {
