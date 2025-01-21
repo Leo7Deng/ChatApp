@@ -20,7 +20,6 @@ func AddCorsHeaders(handler http.HandlerFunc) http.HandlerFunc {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-
 		handler(w, r)
 	}
 }

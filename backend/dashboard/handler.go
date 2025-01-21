@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"github.com/Leo7Deng/ChatApp/middleware"
-	"github.com/Leo7Deng/ChatApp/postgres"
 
+	"github.com/Leo7Deng/ChatApp/middleware"
+	"github.com/Leo7Deng/ChatApp/models"
+	"github.com/Leo7Deng/ChatApp/postgres"
 )
 
 func DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Start of dashboard handler")
 	userID := r.Context().Value(middleware.UserIDKey).(string)
 	fmt.Println("User ID: " + userID)
 	circles, err := postgres.GetUserCircles(userID)
@@ -23,4 +23,17 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("User circles: %v\n", circles)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Logged in\n")
+}
+
+func CreateCirclesHandler(w http.ResponseWriter, r *http.Request) {
+	var circle models.CircleData
+	err := json.NewDecoder(r.Body).Decode(&circle)
+	if err != nil {
+		fmt.Printf("HTTP 400 bad request\n")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("HTTP 400 bad request\n")
+		return
+	}
+	userID := r.Context().Value(middleware.UserIDKey).(string)
+	fmt.Println("Got userID from create circles: " + userID)
 }

@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
-	"github.com/Leo7Deng/ChatApp/models"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -42,71 +39,6 @@ func ConnectPSQL() {
 func GetPool() *pgxpool.Pool {
 	return pool
 }
-
-func InsertRefreshToken(userID string, token uuid.UUID) {
-	conn, err := pool.Acquire(context.Background())
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
-		os.Exit(1)
-	}
-	defer conn.Release()
-	
-	expiryDate := time.Now().AddDate(0, 0, 30).UTC()
-	_, err = conn.Exec(
-		context.Background(),
-		"INSERT INTO refresh_tokens (user_id, token, expires) VALUES ($1, $2, $3)",
-		userID,
-		token,
-		expiryDate,
-	)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to insert into PSQL: %v\n", err)
-	}
-}
-
-func GetUserCircles(userID string) ([]models.Circle, error) {
-	ctx := context.Background()
-	conn, err := pool.Acquire(ctx)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
-		return nil, err
-	}
-	defer conn.Release()
-
-	rows, err := conn.Query(
-		ctx,
-		`
-		SELECT c.id, c.name, c.created_at
-		FROM circles c
-		INNER JOIN users_circles uc ON c.id = uc.circle_id
-		WHERE uc.user_id = $1;
-		`,
-		userID,
-	)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to query circles: %v\n", err)
-		return nil, err
-	}
-	defer rows.Close()
-
-	var circles []models.Circle
-	for rows.Next() {
-		var circle models.Circle
-		err := rows.Scan(&circle.ID, &circle.Name, &circle.CreatedAt)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to scan circle row: %v\n", err)
-			return nil, err
-		}
-		circles = append(circles, circle)
-	}
-
-	if rows.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Error during rows iteration: %v\n", rows.Err())
-		return nil, rows.Err()
-	}
-	return circles, nil
-}
-
 
 func ClosePSQL() {
 	if pool != nil {

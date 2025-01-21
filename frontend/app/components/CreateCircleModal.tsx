@@ -7,19 +7,21 @@ interface CreateCircleModalProps {
 
 function CreateCircleModal({ isOpen, setOpen }: CreateCircleModalProps) {
     interface CircleData {
-        circle_name: string;
+        name: string;
     }
 
-    const createCircle = (circle_name: string): void => {
+    const createCircle = (circleName: string): void => {
+        if (circleName === '') return;
         const data: CircleData = {
-            circle_name: circle_name
+            name: circleName
         };
-        fetch('/api/create-circle', {
+        fetch('http://localhost:8000/api/create-circle', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(data),
+            credentials: 'include',
         });
     };
 
