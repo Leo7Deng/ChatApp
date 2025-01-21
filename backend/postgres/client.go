@@ -36,54 +36,11 @@ func ConnectPSQL() {
 		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
 		os.Exit(1)
 	}
-	
-	
 	fmt.Println("Successfully connected to PSQL")
 }
 
-func CreateAccount(data models.RegisterData) (string, error) {
-	// conn, err := pool.Acquire(context.Background())
-	// if err != nil {
-	// 	fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
-	// 	os.Exit(1)
-	// }
-	// defer conn.Release()
-	// _, err := conn.Exec(
-
-	var userID string
-	err := pool.QueryRow(
-		context.Background(),
-		"INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id",
-		data.FirstName,
-		data.LastName,
-		data.Email,
-		data.Password,
-	).Scan(&userID)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to insert into PSQL: %v\n", err)
-		return "", err
-	}
-	fmt.Println("Successfully created account")
-	return userID, nil
-}
-
-func FindAccount(data models.LoginData) (string, error) {
-	var id string
-	var email string
-	var password string
-	err := pool.QueryRow(
-		context.Background(),
-		"SELECT id, email, password FROM users WHERE email = $1",
-		data.Email,
-	).Scan(&id, &email, &password)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to find account: %v\n", err)
-		return "", err
-	}
-	if email == data.Email && password == data.Password {
-		return id, nil
-	}
-	return "", err
+func GetPool() *pgxpool.Pool {
+	return pool
 }
 
 func InsertRefreshToken(userID string, token uuid.UUID) {

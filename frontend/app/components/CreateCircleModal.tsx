@@ -32,7 +32,7 @@ function CreateCircleModal({ isOpen, setOpen }: CreateCircleModalProps) {
                     <div className="relative">
                         <input
                             type="text"
-                            className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm text-black"
+                            className="w-full rounded-lg border-gray-200 p-4 text-sm shadow-sm text-black"
                             placeholder="Circle Name"
                         />
                     </div>

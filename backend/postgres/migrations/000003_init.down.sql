@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS users_circles;
+DROP TABLE IF EXISTS circles;

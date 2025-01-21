@@ -41,6 +41,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		}
 		if tokenString == "" {
+			fmt.Println("1")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}

@@ -17,7 +17,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Registered account with email: %s\n", account.Email)
 	}
 	var userID string
-	userID, err = postgres.CreateAccount(account)
+	userRepo := postgres.NewUserRepository(postgres.GetPool())
+	userID, err = userRepo.CreateAccount(account)
 	if err != nil {
 		fmt.Printf("Account creation failed\n")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -50,14 +51,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Printf("Logged in account with email: %s\n", account.Email)
 	}
-	var userID string
-	userID, err = postgres.FindAccount(account)
-	if err != nil {
+	var user *models.User
+	userRepo := postgres.NewUserRepository(postgres.GetPool())
+	user, err = userRepo.FindAccount(account.Email)
+	userID := user.ID
+	if err != nil || userID == "" {
 		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Printf("Unauthorized login\n")
 	} else {
 		fmt.Printf("Logged in successfully\n")
-
 		refreshToken, err := CreateRefreshToken(userID)
 		if err != nil {
 			fmt.Printf("Failed to create refresh token\n")
@@ -87,6 +89,7 @@ func setRefreshTokenCookie(w http.ResponseWriter, token string) {
 }
 
 func setAccessTokenCookie(w http.ResponseWriter, token string) {
+	fmt.Println("Setting access token cookie", token)
     http.SetCookie(w, &http.Cookie{
         Name:     "access-token",
         Value:    token,
