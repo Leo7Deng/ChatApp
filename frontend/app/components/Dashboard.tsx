@@ -1,7 +1,7 @@
 "use client"
 
 import "./Dashboard.css"
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CreateCircleModal from "./CreateCircleModal";
 
 interface Circle {
@@ -57,21 +57,24 @@ export default function Dashboard() {
         }
     };
 
-    const ws = new WebSocket("ws://localhost:8000/ws");
+    const ws = useRef<WebSocket>();
+    useEffect(() => {
+        ws.current = new WebSocket("ws://localhost:8000/ws");
+        ws.current.onopen = () => console.log("ws opened");
+        ws.current.onclose = () => console.log("ws closed");
+        const wsCurrent = ws.current;
+        return () => {
+            wsCurrent.close();
+        };
+    }, []);
 
-    ws.onopen = () => {
-        console.log("Connected to WebSocket");
-        ws.send(JSON.stringify({ user_id: "123", content: "Hello World!" }));
-    };
-
-    ws.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        console.log("Received:", message);
-    };
-
-    ws.onclose = () => {
-        console.log("WebSocket connection closed");
-    };
+    useEffect(() => {
+        if (!ws.current) return;
+        ws.current.onmessage = e => {
+            const message = JSON.parse(e.data);
+            console.log("e", message);
+        };
+    }, []);
 
     return (
         <div>
@@ -141,7 +144,7 @@ export default function Dashboard() {
                                             </svg>
 
                                             <span
-                                                className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
+                                                className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible whitespace-nowrap"
                                             >
                                                 {circle.name}
                                             </span>

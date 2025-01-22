@@ -61,7 +61,6 @@ return (
                     </a>
 
                     <h2 className="mt-6 text-2xl font-bold text-white sm:text-3xl md:text-4xl">
-                        Hello World! <br />
                         Welcome to Chat App 💬
                     </h2>
 
