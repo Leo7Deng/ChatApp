@@ -22,7 +22,7 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Printf("User circles: %v\n", circles)
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode("Logged in\n")
+	json.NewEncoder(w).Encode(circles)
 }
 
 func CreateCirclesHandler(w http.ResponseWriter, r *http.Request) {
