@@ -58,7 +58,7 @@ func InsertRefreshToken(userID string, token uuid.UUID) {
 		os.Exit(1)
 	}
 	defer conn.Release()
-	
+
 	expiryDate := time.Now().AddDate(0, 0, 30).UTC()
 	_, err = conn.Exec(
 		context.Background(),
@@ -113,4 +113,61 @@ func GetUserCircles(userID string) ([]models.Circle, error) {
 		return nil, rows.Err()
 	}
 	return circles, nil
+}
+
+func CreateCircles(userID string, name string) error {
+	ctx := context.Background()
+	conn, err := pool.Acquire(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
+		return err
+	}
+	defer conn.Release()
+
+	// Create a transaction because two operations
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to begin transaction: %v\n", err)
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback(ctx)
+		}
+	}()
+
+	var circleID int
+	err = tx.QueryRow(
+		ctx,
+		`
+		INSERT INTO circles (name, created_at)
+		VALUES ($1, NOW())
+		RETURNING id;		
+		`,
+		name).Scan(&circleID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error inserting into circles: %v\n", err)
+		return err
+	}
+
+	_, err = tx.Exec(
+		ctx,
+		`
+		INSERT INTO users_circles (user_id, circle_id, joined_at)
+		VALUES ($1, $2, NOW())
+		`,
+		userID,
+		circleID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error inserting into users_circles: %v\n", err)
+		return err
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to commit transaction: %v\n", err)
+		return err
+	}
+
+	fmt.Printf("Circle '%s' created successfully with ID %d and associated with user ID %s\n", name, circleID, userID)
+	return nil
 }

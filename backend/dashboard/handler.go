@@ -36,4 +36,13 @@ func CreateCirclesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	userID := r.Context().Value(middleware.UserIDKey).(string)
 	fmt.Println("Got userID from create circles: " + userID)
+	err = postgres.CreateCircles(userID, circle.Name)
+	if err != nil {
+		fmt.Printf("Failed to create circle\n")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("Failed to create circle\n")
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode("Circle created\n")
 }
