@@ -115,7 +115,7 @@ func GetUserCircles(userID string) ([]models.Circle, error) {
 	return circles, nil
 }
 
-func CreateCircles(userID string, name string) error {
+func CreateCircle(userID string, name string) error {
 	ctx := context.Background()
 	conn, err := pool.Acquire(ctx)
 	if err != nil {

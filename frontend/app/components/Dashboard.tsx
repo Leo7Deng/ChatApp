@@ -71,8 +71,8 @@ export default function Dashboard() {
     useEffect(() => {
         if (!ws.current) return;
         ws.current.onmessage = e => {
-            const message = JSON.parse(e.data);
-            console.log("e", message);
+            const message = e.data;
+            console.log(message);
         };
     }, []);
 
