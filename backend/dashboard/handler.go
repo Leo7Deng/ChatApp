@@ -8,6 +8,7 @@ import (
 	"github.com/Leo7Deng/ChatApp/middleware"
 	"github.com/Leo7Deng/ChatApp/models"
 	"github.com/Leo7Deng/ChatApp/postgres"
+	"github.com/Leo7Deng/ChatApp/redis"
 )
 
 func DashboardHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,8 +27,8 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateCirclesHandler(w http.ResponseWriter, r *http.Request) {
-	var circle models.CircleData
-	err := json.NewDecoder(r.Body).Decode(&circle)
+	var circleData models.CircleData
+	err := json.NewDecoder(r.Body).Decode(&circleData)
 	if err != nil {
 		fmt.Printf("HTTP 400 bad request\n")
 		w.WriteHeader(http.StatusBadRequest)
@@ -36,7 +37,9 @@ func CreateCirclesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	userID := r.Context().Value(middleware.UserIDKey).(string)
 	fmt.Println("Got userID from create circles: " + userID)
-	err = postgres.CreateCircle(userID, circle.Name)
+
+	var circle models.Circle
+	circle, err = postgres.CreateCircle(userID, circleData.Name)
 	if err != nil {
 		fmt.Printf("Failed to create circle\n")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -45,4 +48,6 @@ func CreateCirclesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Circle created\n")
+
+	err = redis.CreateCircle(circle)
 }

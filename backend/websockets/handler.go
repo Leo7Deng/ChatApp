@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/Leo7Deng/ChatApp/middleware"
 )
 
 const (
@@ -47,6 +48,9 @@ type Client struct {
 
 	// Buffered channel of outbound messages.
 	send chan []byte
+
+	// userID of the client
+	userID string
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -129,7 +133,8 @@ func ServeWs(hub *Hub) http.HandlerFunc {
 			log.Println(err)
 			return
 		}
-		client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+		userID := r.Context().Value(middleware.UserIDKey).(string)
+		client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), userID: userID}
 		client.hub.register <- client
 		fmt.Println("Client registered")
 		// Allow collection of memory referenced by the caller by doing all work in

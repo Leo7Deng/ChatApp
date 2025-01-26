@@ -14,6 +14,9 @@ type Hub struct {
 
 	// Unregister requests from clients.
 	unregister chan *Client
+
+	// map of userID to clients (could have multiple clients per user)
+	userClients map[string]map[*Client]bool
 }
 
 func NewHub() *Hub {
@@ -22,6 +25,7 @@ func NewHub() *Hub {
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		clients:    make(map[*Client]bool),
+		userClients: make(map[string]map[*Client]bool),
 	}
 }
 
@@ -30,10 +34,20 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.register:
 			h.clients[client] = true
+			if _, ok := h.userClients[client.userID]; !ok {
+				h.userClients[client.userID] = make(map[*Client]bool)
+			}
+			h.userClients[client.userID][client] = true
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
 				close(client.send)
+				if connections, ok := h.userClients[client.userID]; ok {
+					delete(connections, client)
+					if len(connections) == 0 {
+						delete(h.userClients, client.userID)
+					}
+				}
 			}
 		case message := <-h.broadcast:
 			for client := range h.clients {
@@ -49,5 +63,7 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) Broadcast(message []byte) {
-	h.broadcast <- message
+	for client := range h.clients {
+		client.send <- message
+	}
 }

@@ -115,12 +115,12 @@ func GetUserCircles(userID string) ([]models.Circle, error) {
 	return circles, nil
 }
 
-func CreateCircle(userID string, name string) error {
+func CreateCircle(userID string, name string) (models.Circle, error) {
 	ctx := context.Background()
 	conn, err := pool.Acquire(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
-		return err
+		return models.Circle{}, err
 	}
 	defer conn.Release()
 
@@ -136,17 +136,19 @@ func CreateCircle(userID string, name string) error {
 	}()
 
 	var circleID int
+	var currentTime = time.Now()
 	err = tx.QueryRow(
 		ctx,
 		`
 		INSERT INTO circles (name, created_at)
-		VALUES ($1, NOW())
+		VALUES ($1, $2)
 		RETURNING id;		
 		`,
-		name).Scan(&circleID)
+		name,
+		currentTime).Scan(&circleID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error inserting into circles: %v\n", err)
-		return err
+		return models.Circle{}, err
 	}
 
 	_, err = tx.Exec(
@@ -159,15 +161,16 @@ func CreateCircle(userID string, name string) error {
 		circleID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error inserting into users_circles: %v\n", err)
-		return err
+		return models.Circle{}, err
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to commit transaction: %v\n", err)
-		return err
+		return models.Circle{}, err
 	}
 
-	fmt.Printf("Circle '%s' created successfully with ID %d and associated with user ID %s\n", name, circleID, userID)
-	return nil
+	circle := models.Circle{ID: circleID, Name: name, CreatedAt: currentTime}
+	fmt.Printf("Circle created: %v\n", circle)
+	return circle, nil
 }
