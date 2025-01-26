@@ -21,10 +21,10 @@ type Hub struct {
 
 func NewHub() *Hub {
 	return &Hub{
-		broadcast:  make(chan []byte),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		clients:    make(map[*Client]bool),
+		broadcast:   make(chan []byte),
+		register:    make(chan *Client),
+		unregister:  make(chan *Client),
+		clients:     make(map[*Client]bool),
 		userClients: make(map[string]map[*Client]bool),
 	}
 }
@@ -63,7 +63,12 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) Broadcast(message []byte) {
+	h.broadcast <- message
+}
+
+func (h *Hub) SendToUser(userID string, message []byte) {
 	for client := range h.clients {
-		client.send <- message
+		client.hub.broadcast <- message
 	}
 }
+

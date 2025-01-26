@@ -34,3 +34,22 @@ func CreateAccessToken(userID string) (string, error) {
 		return tokenString, nil
 	}
 }
+
+func ValidateAccessToken(tokenString string) (string, error) {
+	secretKey := []byte(os.Getenv("TOKEN_SECRET_KEY"))
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return secretKey, nil
+	})
+	if err != nil {
+		return "", err
+	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		userID := claims["user_id"].(string)
+		return userID, nil
+	} else {
+		return "", err
+	}
+}

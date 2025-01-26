@@ -8,7 +8,7 @@ import (
 	"github.com/Leo7Deng/ChatApp/middleware"
 	"github.com/Leo7Deng/ChatApp/models"
 	"github.com/Leo7Deng/ChatApp/postgres"
-	"github.com/Leo7Deng/ChatApp/redis"
+	"github.com/Leo7Deng/ChatApp/websockets"
 )
 
 func DashboardHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +26,7 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(circles)
 }
 
-func CreateCirclesHandler(w http.ResponseWriter, r *http.Request) {
+func CreateCirclesHandler(w http.ResponseWriter, r *http.Request, hub *websockets.Hub) {
 	var circleData models.CircleData
 	err := json.NewDecoder(r.Body).Decode(&circleData)
 	if err != nil {
@@ -49,5 +49,12 @@ func CreateCirclesHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Circle created\n")
 
-	err = redis.CreateCircle(circle)
+	circleJSON, err := json.Marshal(circle)
+	if err != nil {
+		fmt.Printf("Failed to marshal circle\n")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("Failed to marshal circle\n")
+		return
+	}
+	hub.SendToUser(userID, circleJSON)
 }
