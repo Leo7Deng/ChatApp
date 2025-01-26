@@ -70,9 +70,20 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (!ws.current) return;
-        ws.current.onmessage = e => {
-            const message = e.data;
-            console.log(message);
+        ws.current.onmessage = (e) => {
+            console.log("ws message: ", e.data);
+            try {
+                const parsedData = JSON.parse(e.data);
+                console.log("Parsed data:", parsedData);
+                const newCircle = {
+                    id: parsedData.id,
+                    name: parsedData.name,
+                    created_at: parsedData.created_at,
+                };
+                setCircles((prevCircles) => [...prevCircles, newCircle]);
+            } catch (error) {
+                console.error("Error parsing WebSocket message:", error);
+            }
         };
     }, []);
 

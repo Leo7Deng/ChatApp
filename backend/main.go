@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
+	// "time"
 
 	"github.com/Leo7Deng/ChatApp/auth"
 	"github.com/Leo7Deng/ChatApp/dashboard"
@@ -44,13 +44,13 @@ func main() {
 	fmt.Println("Websocket server started", hub)
 
 	// asyncronously broadcast message every 5 seconds
-	go func() {
-		for {
-			hub.Broadcast([]byte("Hello from the server"))
-			fmt.Println("Broadcasting message")
-			<-time.After(5 * time.Second)
-		}
-	}()
+	// go func() {
+	// 	for {
+	// 		hub.Broadcast([]byte("Hello from the server"))
+	// 		fmt.Println("Broadcasting message")
+	// 		<-time.After(5 * time.Second)
+	// 	}
+	// }()
 
 	mux.HandleFunc("/api/register", middleware.AddCorsHeaders(auth.RegisterHandler))
 	mux.HandleFunc("/api/login", middleware.AddCorsHeaders(auth.LoginHandler))
