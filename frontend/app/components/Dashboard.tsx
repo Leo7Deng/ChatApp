@@ -47,6 +47,8 @@ export default function Dashboard() {
         setOpenModal(true);
     }
 
+    const [selectedCircleID, setSelectedCircleID] = useState(0);
+
     interface HandleCloseEvent extends React.MouseEvent<HTMLDivElement> {
         target: EventTarget & HTMLDivElement;
     }
@@ -54,6 +56,13 @@ export default function Dashboard() {
     const handleClose = (event: HandleCloseEvent) => {
         if (event.target.classList.contains('modal-container')) {
             setOpenModal(false);
+        }
+    };
+
+    interface HandleEnterEvent extends React.KeyboardEvent<HTMLInputElement> {}
+    const handleEnter = (event: HandleEnterEvent) => {
+        if (event.key === 'Enter') {
+            console.log("Enter key pressed");
         }
     };
 
@@ -88,8 +97,8 @@ export default function Dashboard() {
     }, []);
 
     return (
-        <div>
-            <div className="flex h-screen w-16 flex-col justify-between border-e bg-white">
+        <div className="dashboard">
+            <div className="flex h-screen w-16 flex-col justify-between border-e bg-white sidebar">
                 <div>
                     <div className="inline-flex size-16 items-center justify-center">
                         <span className="grid size-10 place-content-center rounded-lg bg-gray-100 text-xs text-gray-600">
@@ -135,31 +144,33 @@ export default function Dashboard() {
                             <ul className="space-y-1 border-t border-gray-100 pt-4">
                                 {circles.map((circle) => (
                                     <li key={circle.id}>
-                                        <a
-                                            href="#"
-                                            className="group relative flex justify-center rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="size-5 opacity-75"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
+                                        <button onClick={() => setSelectedCircleID(circle.id)}>
+                                            <a
+                                                href="#"
+                                                className="group relative flex justify-center rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
                                             >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                                />
-                                            </svg>
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="size-5 opacity-75"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                                    />
+                                                </svg>
 
-                                            <span
-                                                className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible whitespace-nowrap"
-                                            >
-                                                {circle.name}
-                                            </span>
-                                        </a>
+                                                <span
+                                                    className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible whitespace-nowrap"
+                                                >
+                                                    {circle.name}
+                                                </span>
+                                            </a>
+                                        </button>
                                     </li>
                                 ))}
 
@@ -340,6 +351,22 @@ export default function Dashboard() {
                     </div>
                 </div>}
             </div>
+            <div className="chat-container">
+                <div className="chat-placeholder">
+                    {selectedCircleID !== 0 && (
+                        <div>
+                            <h2>Chat for Circle {selectedCircleID}</h2>
+                        </div>
+                    )}
+                </div>
+                <div className="text-box">
+                    <input type="text" className="text-input" placeholder="Type a message" onKeyDown={handleEnter} />
+                </div>
+            </div>
+            <div className="analytics-container">
+                <div className="analytics-placeholder">
+                </div>
+            </div>
         </div>
     )
-}
+};
