@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import CreateCircleModal from "./CreateCircleModal";
 
 interface Circle {
-    id: number;
+    id: string;
     name: string;
     created_at: string;
 }
@@ -47,7 +47,7 @@ export default function Dashboard() {
         setOpenModal(true);
     }
 
-    const [selectedCircleID, setSelectedCircleID] = useState(0);
+    const [selectedCircleID, setSelectedCircleID] = useState("");
     const [selectedButtonID, setSelectedButtonID] = useState(0);
 
     interface HandleCloseEvent extends React.MouseEvent<HTMLDivElement> {
@@ -124,7 +124,7 @@ export default function Dashboard() {
                     setCircles((prevCircles) => [...prevCircles, newCircle]);
                 }
                 else if (parsedData.type == "remove-circle") {
-                    const circleID = parsedData.data;
+                    const circleID = parsedData.data.id;
                     console.log("Removing circle with ID:", circleID);
                     setCircles((prevCircles) => prevCircles.filter((circle) => circle.id !== circleID));
                 }
@@ -351,7 +351,7 @@ export default function Dashboard() {
                     </div>
                 </div>
                 <div className="chat-placeholder">
-                    {selectedCircleID !== 0 && (
+                    {selectedCircleID !== "" && (
                         <div>
                             <h2>Chat text</h2>
                         </div>
