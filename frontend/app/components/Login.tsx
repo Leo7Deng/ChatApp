@@ -13,6 +13,7 @@ export default function Login() {
     const [loginError, setLoginError] = useState(false);
 
     const loginAccount = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
         console.log(loginData);
         if (validator.isEmail(loginData.email) &&
             loginData.password !== ""
