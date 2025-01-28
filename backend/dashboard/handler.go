@@ -49,7 +49,14 @@ func CreateCirclesHandler(w http.ResponseWriter, r *http.Request, hub *websocket
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Circle created\n")
 
-	circleJSON, err := json.Marshal(circle)
+	response := struct {
+		Type   string        `json:"type"`
+		Circle models.Circle `json:"circle"`
+	}{
+		Type:   "circle",
+		Circle: circle,
+	}
+	circleJSON, err := json.Marshal(response)
 	if err != nil {
 		fmt.Printf("Failed to marshal circle\n")
 		w.WriteHeader(http.StatusInternalServerError)

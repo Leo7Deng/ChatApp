@@ -48,6 +48,7 @@ export default function Dashboard() {
     }
 
     const [selectedCircleID, setSelectedCircleID] = useState(0);
+    const [selectedButtonID, setSelectedButtonID] = useState(0);
 
     interface HandleCloseEvent extends React.MouseEvent<HTMLDivElement> {
         target: EventTarget & HTMLDivElement;
@@ -59,10 +60,19 @@ export default function Dashboard() {
         }
     };
 
-    interface HandleEnterEvent extends React.KeyboardEvent<HTMLInputElement> {}
+    interface HandleEnterEvent extends React.KeyboardEvent<HTMLInputElement> { }
     const handleEnter = (event: HandleEnterEvent) => {
         if (event.key === 'Enter') {
             console.log("Enter key pressed");
+            const message = JSON.stringify({
+                type: "message",
+                message: event.currentTarget.value
+            });
+            console.log("Sending message:", message);
+            event.currentTarget.value = '';
+            if (ws.current) {
+                ws.current.send(message);
+            }
         }
     };
 
@@ -84,6 +94,9 @@ export default function Dashboard() {
             try {
                 const parsedData = JSON.parse(e.data);
                 console.log("Parsed data:", parsedData);
+                if (parsedData.type != "circle") {
+                    return;
+                }
                 const newCircle = {
                     id: parsedData.id,
                     name: parsedData.name,
@@ -106,12 +119,12 @@ export default function Dashboard() {
                         </span>
                     </div>
 
-                    <div className="border-t border-gray-100">
+                    <div className="border-t" style={{ borderColor: 'hsl(0, 0%, 87%)' }}>
                         <div className="px-2">
-                            <div className="py-4">
+                            <div className="py-2">
                                 <a
                                     href="#"
-                                    className="t group relative flex justify-center rounded bg-blue-50 px-2 py-1.5 text-blue-700"
+                                    className="t group relative flex justify-center rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -134,17 +147,20 @@ export default function Dashboard() {
                                     </svg>
 
                                     <span
-                                        className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
+                                        id="1"
+                                        onClick={() => setSelectedButtonID(1)}
+                                        className={`invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible' ${selectedButtonID === 1 ? "bg-blue-50 text-blue-700 opacity-100" : ""
+                                            }`}
                                     >
                                         General
                                     </span>
                                 </a>
                             </div>
 
-                            <ul className="space-y-1 border-t border-gray-100 pt-4">
+                            <ul className="space-y-1 border-t pt-4" style={{ borderColor: 'hsl(0, 0%, 87%)' }}>
                                 {circles.map((circle) => (
-                                    <li key={circle.id}>
-                                        <button onClick={() => setSelectedCircleID(circle.id)}>
+                                    <li key={circle.id} className="flex justify-center">
+                                        <button onClick={() => setSelectedCircleID(circle.id)} className="w-full">
                                             <a
                                                 href="#"
                                                 className="group relative flex justify-center rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
@@ -261,7 +277,7 @@ export default function Dashboard() {
 
                                 <li className="flex justify-center">
                                     <button
-                                        className="group relative flex justify-center rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                                        className="group relative flex justify-center rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 w-full"
                                         onClick={createCircle}
                                     >
                                         <svg
@@ -316,7 +332,7 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                <div className="sticky inset-x-0 bottom-0 border-t border-gray-100 bg-white p-2">
+                <div className="sticky inset-x-0 bottom-0 border-t bg-white p-2" style={{ borderColor: 'hsl(0, 0%, 87%)' }}>
                     <form action="#">
                         <button
                             type="submit"
@@ -336,7 +352,6 @@ export default function Dashboard() {
                                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                                 />
                             </svg>
-
                             <span
                                 className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
                             >
@@ -352,10 +367,26 @@ export default function Dashboard() {
                 </div>}
             </div>
             <div className="chat-container">
+                <div className="chat-title">
+                    <h1>{circles.find((circle) => circle.id === selectedCircleID)?.name}</h1>
+                    <div className="chat-delete">
+
+                    <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="size-5 opacity-55"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth="0.1"
+                            >
+                            <path d="M 10 2 L 9 3 L 4 3 L 4 5 L 5 5 L 5 20 C 5 20.522222 5.1913289 21.05461 5.5683594 21.431641 C 5.9453899 21.808671 6.4777778 22 7 22 L 17 22 C 17.522222 22 18.05461 21.808671 18.431641 21.431641 C 18.808671 21.05461 19 20.522222 19 20 L 19 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 7 5 L 17 5 L 17 20 L 7 20 L 7 5 z M 9 7 L 9 18 L 11 18 L 11 7 L 9 7 z M 13 7 L 13 18 L 15 18 L 15 7 L 13 7 z"></path>
+                        </svg>
+                    </div>
+                </div>
                 <div className="chat-placeholder">
                     {selectedCircleID !== 0 && (
                         <div>
-                            <h2>Chat for Circle {selectedCircleID}</h2>
+                            <h2>Chat text</h2>
                         </div>
                     )}
                 </div>

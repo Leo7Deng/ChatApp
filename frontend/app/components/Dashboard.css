@@ -29,7 +29,6 @@
     width: 95vw;
     height: 100vh;
     background: white;
-    padding: 1rem;
     display: flex;
     flex-direction: column;
 }
@@ -57,7 +56,7 @@
 .sidebar {
     width: 8vh;
     z-index: 10;
-    border: 1px solid hsl(0, 0%, 87%);
+    border-right: 1px solid hsl(0, 0%, 87%);
 }
 
 .analytics-container {
@@ -65,3 +64,22 @@
     width: 35vw;
 }
 
+.chat-title {
+    font-size: 1.5rem;
+    color: hsl(0, 0%, 18%);
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+    margin-bottom: 0.3rem;
+    padding: 0.57rem;
+    display: flex;
+
+}
+
+.chat-delete {
+    margin-left: auto;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    margin-right: 0.2rem;
+    border-left: 1px solid hsl(0, 0%, 87%);
+    padding-left: 0.5rem;
+}

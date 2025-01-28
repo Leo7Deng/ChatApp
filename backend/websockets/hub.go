@@ -1,5 +1,7 @@
 package websockets
 
+import "log"
+
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
@@ -50,6 +52,7 @@ func (h *Hub) Run() {
 				}
 			}
 		case message := <-h.broadcast:
+			log.Printf("Received message: %s", message)
 			for client := range h.clients {
 				select {
 				case client.send <- message:
