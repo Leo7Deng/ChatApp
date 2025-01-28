@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -33,18 +32,6 @@ func RedisClient() {
 	}
 
 	fmt.Println("Redis client connected")
-}
-
-func InsertRefreshToken(userID string, refreshToken string) bool {
-	ctx := context.Background()
-	key := fmt.Sprintf("refresh_token:%s", refreshToken)
-	err := client.Set(ctx, key, userID, 30 * 24 * time.Hour).Err()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to insert into Redis: %v\n", err)
-		return false
-	}
-	fmt.Println("Successfully inserted refresh token")
-	return true
 }
 
 func CloseRedis() {

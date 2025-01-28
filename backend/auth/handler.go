@@ -30,13 +30,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Printf("Failed to create refresh token\n")
 		}
-		setRefreshTokenCookie(w, refreshToken)
+		SetRefreshTokenCookie(w, refreshToken)
 
 		accessToken, err := CreateAccessToken(userID)
 		if err != nil {
 			fmt.Printf("Failed to create access token\n")
 		}
-		setAccessTokenCookie(w, accessToken)
+		SetAccessTokenCookie(w, accessToken)
 
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode("Account created\n")
@@ -64,31 +64,31 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Printf("Failed to create refresh token\n")
 		}
-		setRefreshTokenCookie(w, refreshToken)
+		SetRefreshTokenCookie(w, refreshToken)
 
 		accessToken, err := CreateAccessToken(userID)
 		if err != nil {
 			fmt.Printf("Failed to create access token\n")
 		}
-		setAccessTokenCookie(w, accessToken)
+		SetAccessTokenCookie(w, accessToken)
 
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode("Logged in\n")
 	}
 }
 
-func setRefreshTokenCookie(w http.ResponseWriter, token string) {
+func SetRefreshTokenCookie(w http.ResponseWriter, token string) {
     http.SetCookie(w, &http.Cookie{
         Name:     "refresh-token",
         Value:    token,
         Path:     "/",
         Secure:   true,
         HttpOnly: true,
-        MaxAge:   30 * 24 * 60 * 60, // 30 days
+        MaxAge:   1 * 24 * 60 * 60, // 1 day
     })
 }
 
-func setAccessTokenCookie(w http.ResponseWriter, token string) {
+func SetAccessTokenCookie(w http.ResponseWriter, token string) {
 	fmt.Println("Setting access token cookie", token)
     http.SetCookie(w, &http.Cookie{
         Name:     "access-token",
