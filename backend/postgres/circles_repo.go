@@ -72,7 +72,7 @@ func CreateCircle(userID string, name string) (models.Circle, error) {
 		}
 	}()
 
-	var circleID int
+	var circleID string
 	var currentTime = time.Now()
 	err = tx.QueryRow(
 		ctx,
@@ -91,8 +91,8 @@ func CreateCircle(userID string, name string) (models.Circle, error) {
 	_, err = tx.Exec(
 		ctx,
 		`
-		INSERT INTO users_circles (user_id, circle_id, joined_at)
-		VALUES ($1, $2, NOW())
+		INSERT INTO users_circles (user_id, circle_id, joined_at, role)
+		VALUES ($1, $2, NOW(), 'admin');
 		`,
 		userID,
 		circleID)
@@ -112,7 +112,7 @@ func CreateCircle(userID string, name string) (models.Circle, error) {
 	return circle, nil
 }
 
-func DeleteCircle(circleID string) error {
+func DeleteCircle(userID string, circleID string) error {
 	ctx := context.Background()
 	conn, err := pool.Acquire(ctx)
 	if err != nil {
@@ -131,6 +131,25 @@ func DeleteCircle(circleID string) error {
 			_ = tx.Rollback(ctx)
 		}
 	}()
+
+	// Check if user is admin of circle
+	var role string
+	err = tx.QueryRow(
+		ctx,
+		`
+		SELECT role
+		FROM users_circles
+		WHERE user_id = $1 AND circle_id = $2;
+		`,
+		userID,
+		circleID).Scan(&role)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error checking user role: %v\n", err)
+	}
+	if role != "admin" {
+		fmt.Fprintf(os.Stderr, "User is not admin of circle\n")
+		return fmt.Errorf("user is not admin of circle")
+	}
 
 	_, err = tx.Exec(
 		ctx,

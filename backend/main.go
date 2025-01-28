@@ -64,13 +64,20 @@ func main() {
 	mux.Handle("/api/create-circle", middleware.AddCorsHeaders(
 		middleware.AuthMiddleware(
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				dashboard.CreateCirclesHandler(w, r, hub)
+				dashboard.CreateCircleHandler(w, r, hub)
 			}),
 		),
 	))
 	mux.HandleFunc("/ws", middleware.AddCorsHeaders(
 		middleware.AuthMiddleware(
 			websockets.ServeWs(hub),
+		),
+	))
+	mux.HandleFunc("/api/delete-circle", middleware.AddCorsHeaders(
+		middleware.AuthMiddleware(
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				dashboard.DeleteCircleHandler(w, r, hub)
+			}),
 		),
 	))
 	log.Fatal(srv.ListenAndServe())

@@ -60,6 +60,7 @@ export default function Dashboard() {
         }
     };
 
+    const ws = useRef<WebSocket>();
     interface HandleEnterEvent extends React.KeyboardEvent<HTMLInputElement> { }
     const handleEnter = (event: HandleEnterEvent) => {
         if (event.key === 'Enter') {
@@ -76,7 +77,25 @@ export default function Dashboard() {
         }
     };
 
-    const ws = useRef<WebSocket>();
+    const handleDelete = () => {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        fetch('http://localhost:8000/api/delete-circle', {
+            method: 'DELETE',
+            headers: headers,
+            credentials: 'include',
+            body: JSON.stringify({ circle_id: selectedCircleID })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Data:", data);
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
     useEffect(() => {
         ws.current = new WebSocket("ws://localhost:8000/ws");
         ws.current.onopen = () => console.log("ws opened");
@@ -94,16 +113,21 @@ export default function Dashboard() {
             try {
                 var parsedData = JSON.parse(e.data);
                 console.log("Parsed data:", parsedData);
-                if (parsedData.type != "circle") {
-                    return;
+                if (parsedData.type == "add-circle") {
+                    parsedData = parsedData.data;
+                    console.log("Adding circle:", parsedData.id);
+                    const newCircle = {
+                        id: parsedData.id,
+                        name: parsedData.name,
+                        created_at: parsedData.created_at,
+                    };
+                    setCircles((prevCircles) => [...prevCircles, newCircle]);
                 }
-                parsedData = parsedData.circle;
-                const newCircle = {
-                    id: parsedData.id,
-                    name: parsedData.name,
-                    created_at: parsedData.created_at,
-                };
-                setCircles((prevCircles) => [...prevCircles, newCircle]);
+                else if (parsedData.type == "remove-circle") {
+                    const circleID = parsedData.data;
+                    console.log("Removing circle with ID:", circleID);
+                    setCircles((prevCircles) => prevCircles.filter((circle) => circle.id !== circleID));
+                }
             } catch (error) {
                 console.error("Error parsing WebSocket message:", error);
             }
@@ -124,7 +148,6 @@ export default function Dashboard() {
                         <div className="px-2">
                             <div className="py-2">
                                 <a
-                                    href="#"
                                     className="t group relative flex justify-center rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
                                 >
                                     <svg
@@ -163,7 +186,6 @@ export default function Dashboard() {
                                     <li key={circle.id} className="flex justify-center">
                                         <button onClick={() => setSelectedCircleID(circle.id)} className="w-full">
                                             <a
-                                                href="#"
                                                 className="group relative flex justify-center rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
                                             >
                                                 <svg
@@ -192,7 +214,6 @@ export default function Dashboard() {
                                 ))}
                                 <li>
                                     <a
-                                        href="#"
                                         className="group relative flex justify-center rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
                                     >
                                         <svg
@@ -314,8 +335,9 @@ export default function Dashboard() {
                 <div className="chat-title">
                     <h1>{circles.find((circle) => circle.id === selectedCircleID)?.name}&nbsp;</h1>
                     <div className="chat-delete">
+                        <button className="group relative rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 h-full" onClick={handleDelete}>
 
-                    <svg
+                            <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="size-5 opacity-55"
                                 fill="currentColor"
@@ -323,8 +345,9 @@ export default function Dashboard() {
                                 stroke="currentColor"
                                 strokeWidth="0.1"
                             >
-                            <path d="M 10 2 L 9 3 L 4 3 L 4 5 L 5 5 L 5 20 C 5 20.522222 5.1913289 21.05461 5.5683594 21.431641 C 5.9453899 21.808671 6.4777778 22 7 22 L 17 22 C 17.522222 22 18.05461 21.808671 18.431641 21.431641 C 18.808671 21.05461 19 20.522222 19 20 L 19 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 7 5 L 17 5 L 17 20 L 7 20 L 7 5 z M 9 7 L 9 18 L 11 18 L 11 7 L 9 7 z M 13 7 L 13 18 L 15 18 L 15 7 L 13 7 z"></path>
-                        </svg>
+                                <path d="M 10 2 L 9 3 L 4 3 L 4 5 L 5 5 L 5 20 C 5 20.522222 5.1913289 21.05461 5.5683594 21.431641 C 5.9453899 21.808671 6.4777778 22 7 22 L 17 22 C 17.522222 22 18.05461 21.808671 18.431641 21.431641 C 18.808671 21.05461 19 20.522222 19 20 L 19 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 7 5 L 17 5 L 17 20 L 7 20 L 7 5 z M 9 7 L 9 18 L 11 18 L 11 7 L 9 7 z M 13 7 L 13 18 L 15 18 L 15 7 L 13 7 z"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
                 <div className="chat-placeholder">
