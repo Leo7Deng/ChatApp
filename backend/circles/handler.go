@@ -1,9 +1,10 @@
-package dashboard
+package circles
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/Leo7Deng/ChatApp/middleware"
 	"github.com/Leo7Deng/ChatApp/models"
@@ -11,7 +12,18 @@ import (
 	"github.com/Leo7Deng/ChatApp/websockets"
 )
 
-func DashboardHandler(w http.ResponseWriter, r *http.Request) {
+func CircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets.Hub) {
+	switch r.Method {
+	case "GET":
+		GetCirclesHandler(w, r)
+	case "POST":
+		CreateCircleHandler(w, r, hub)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func GetCirclesHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(middleware.UserIDKey).(string)
 	fmt.Println("User ID: " + userID)
 	circles, err := postgres.GetUserCircles(userID)
@@ -25,6 +37,7 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(circles)
 }
+
 
 func CreateCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets.Hub) {
 	var circleData models.CircleData
@@ -48,10 +61,10 @@ func CreateCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 	}
 
 	response := struct {
-		Type   string        `json:"type"`
+		Type string        `json:"type"`
 		Data models.Circle `json:"data"`
 	}{
-		Type:   "add-circle",
+		Type: "add-circle",
 		Data: circle,
 	}
 	circleJSON, err := json.Marshal(response)
@@ -68,12 +81,10 @@ func CreateCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 }
 
 func DeleteCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets.Hub) {
-	var requestBody struct {
-		CircleID string `json:"circle_id"`
-	}
-	err := json.NewDecoder(r.Body).Decode(&requestBody)
-	circleID := requestBody.CircleID
-	if err != nil {
+	circleID := strings.TrimPrefix(r.URL.Path, "/api/circles/")
+	fmt.Println("Circle ID: " + circleID)
+
+	if circleID == "" {
 		fmt.Printf("HTTP 400 bad request\n")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode("HTTP 400 bad request\n")
@@ -82,7 +93,7 @@ func DeleteCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 	userID := r.Context().Value(middleware.UserIDKey).(string)
 	fmt.Println("Got userID from delete circles: " + userID)
 
-	err = postgres.DeleteCircle(userID, circleID)
+	err := postgres.DeleteCircle(userID, circleID)
 	if err != nil {
 		fmt.Printf("Failed to delete circle\n")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -91,10 +102,10 @@ func DeleteCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 	}
 
 	response := struct {
-		Type   string        `json:"type"`
+		Type string        `json:"type"`
 		Data models.Circle `json:"data"`
 	}{
-		Type:   "remove-circle",
+		Type: "remove-circle",
 		Data: models.Circle{ID: circleID},
 	}
 

@@ -11,16 +11,16 @@ interface Circle {
 }
 
 export default function Dashboard() {
+
+    // Get circles from the server
     const [circles, setCircles] = useState<Circle[]>([]);
-
-
     useEffect(() => {
         async function fetchUserData() {
             const headers = {
                 'Content-Type': 'application/json',
             };
-            fetch('http://localhost:8000/api/dashboard', {
-                method: 'POST',
+            fetch('http://localhost:8000/api/circles', {
+                method: 'GET',
                 headers: headers,
                 credentials: 'include'
             })
@@ -41,26 +41,52 @@ export default function Dashboard() {
         fetchUserData();
     }, []);
 
-
+    // Create a new circle
     const [openModal, setOpenModal] = useState(false);
     function createCircle() {
         setOpenModal(true);
     }
-
-    const [selectedCircleID, setSelectedCircleID] = useState("");
-    const [selectedButtonID, setSelectedButtonID] = useState(0);
-
     interface HandleCloseEvent extends React.MouseEvent<HTMLDivElement> {
         target: EventTarget & HTMLDivElement;
     }
-
     const handleClose = (event: HandleCloseEvent) => {
         if (event.target.classList.contains('modal-container')) {
             setOpenModal(false);
         }
     };
 
+    // Delete circle
+    const handleDelete = () => {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        fetch(`http://localhost:8000/api/circles/${selectedCircleID}`, {
+            method: 'DELETE',
+            headers: headers,
+            credentials: 'include',
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Data:", data);
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    // Connect to WebSocket
     const ws = useRef<WebSocket>();
+    useEffect(() => {
+        ws.current = new WebSocket("ws://localhost:8000/ws");
+        ws.current.onopen = () => console.log("ws opened");
+        ws.current.onclose = () => console.log("ws closed");
+        const wsCurrent = ws.current;
+        return () => {
+            wsCurrent.close();
+        };
+    }, []);
+
+    // Send message to WebSocket
     interface HandleEnterEvent extends React.KeyboardEvent<HTMLInputElement> { }
     const handleEnter = (event: HandleEnterEvent) => {
         if (event.key === 'Enter') {
@@ -77,35 +103,7 @@ export default function Dashboard() {
         }
     };
 
-    const handleDelete = () => {
-        const headers = {
-            'Content-Type': 'application/json',
-        };
-        fetch('http://localhost:8000/api/delete-circle', {
-            method: 'DELETE',
-            headers: headers,
-            credentials: 'include',
-            body: JSON.stringify({ circle_id: selectedCircleID })
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Data:", data);
-            })
-            .catch(error => {
-                console.log(error);
-            });
-    }
-
-    useEffect(() => {
-        ws.current = new WebSocket("ws://localhost:8000/ws");
-        ws.current.onopen = () => console.log("ws opened");
-        ws.current.onclose = () => console.log("ws closed");
-        const wsCurrent = ws.current;
-        return () => {
-            wsCurrent.close();
-        };
-    }, []);
-
+    // Receive message from WebSocket
     useEffect(() => {
         if (!ws.current) return;
         ws.current.onmessage = (e) => {
@@ -133,6 +131,9 @@ export default function Dashboard() {
             }
         };
     }, []);
+
+    const [selectedCircleID, setSelectedCircleID] = useState("");
+    const [selectedButtonID, setSelectedButtonID] = useState(0);
 
     return (
         <div className="dashboard">
