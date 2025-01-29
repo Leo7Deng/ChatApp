@@ -20,9 +20,19 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	userRepo := postgres.NewUserRepository(postgres.GetPool())
 	userID, err = userRepo.CreateAccount(account)
 	if err != nil {
-		fmt.Printf("Account creation failed\n")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode("Account creation failed\n")
+		if err.Error() == "email" {
+			fmt.Printf("Email already exists\n")
+			w.WriteHeader(http.StatusConflict)
+			json.NewEncoder(w).Encode("Email already exists")
+		} else if err.Error() == "username" {
+			fmt.Printf("Username already exists\n")
+			w.WriteHeader(http.StatusConflict)
+			json.NewEncoder(w).Encode("Username already exists")
+		} else {
+			fmt.Printf("Account creation failed\n")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode("Account creation failed")
+		}
 	} else {
 		fmt.Printf("Account created successfully\n")
 
@@ -39,7 +49,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		SetAccessTokenCookie(w, accessToken)
 
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode("Account created\n")
+		json.NewEncoder(w).Encode("Account created")
 	}
 }
 
@@ -78,24 +88,24 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SetRefreshTokenCookie(w http.ResponseWriter, token string) {
-    http.SetCookie(w, &http.Cookie{
-        Name:     "refresh-token",
-        Value:    token,
-        Path:     "/",
-        Secure:   true,
-        HttpOnly: true,
-        MaxAge:   1 * 24 * 60 * 60, // 1 day
-    })
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh-token",
+		Value:    token,
+		Path:     "/",
+		Secure:   true,
+		HttpOnly: true,
+		MaxAge:   1 * 24 * 60 * 60, // 1 day
+	})
 }
 
 func SetAccessTokenCookie(w http.ResponseWriter, token string) {
 	fmt.Println("Setting access token cookie", token)
-    http.SetCookie(w, &http.Cookie{
-        Name:     "access-token",
-        Value:    token,
-        Path:     "/",
-        Secure:   true,
-        HttpOnly: true,
-        MaxAge:   15 * 60, // 15 minutes
-    })
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access-token",
+		Value:    token,
+		Path:     "/",
+		Secure:   true,
+		HttpOnly: true,
+		MaxAge:   15 * 60, // 15 minutes
+	})
 }

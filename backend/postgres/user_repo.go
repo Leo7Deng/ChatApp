@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/Leo7Deng/ChatApp/models"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -23,13 +25,22 @@ func (r *UserRepository) CreateAccount(data models.RegisterData) (string, error)
 	var userID string
 	err := r.pool.QueryRow(
 		context.Background(),
-		"INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id",
+		"INSERT INTO users (first_name, last_name, username, email, password) VALUES ($1, $2, $3, $4, $5) RETURNING id",
 		data.FirstName,
 		data.LastName,
+		data.Username,
 		data.Email,
 		data.Password,
 	).Scan(&userID)
 	if err != nil {
+		pgErr, ok := err.(*pgconn.PgError)
+		if ok && pgErr.Code == "23505" { // 23505 = unique violation
+			if strings.Contains(pgErr.Message, "users_email_key") {
+				return "", fmt.Errorf("email")
+			} else if strings.Contains(pgErr.Message, "users_username_key") {
+				return "", fmt.Errorf("username")
+			}
+		}
 		fmt.Printf("Unable to insert into PSQL: %v\n", err)
 		return "", err
 	}

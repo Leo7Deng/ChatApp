@@ -4,6 +4,7 @@ type User struct {
 	ID              string `json:"id"`
 	FirstName       string `json:"firstName"`
 	LastName        string `json:"lastName"`
+	Username        string `json:"username"`
 	Email           string `json:"email"`
 	Password        string `json:"password"`
 }
@@ -11,6 +12,7 @@ type User struct {
 type RegisterData struct {
 	FirstName       string `json:"firstName"`
 	LastName        string `json:"lastName"`
+	Username        string `json:"username"`
 	Email           string `json:"email"`
 	Password        string `json:"password"`
 	ConfirmPassword string `json:"confirmPassword"`

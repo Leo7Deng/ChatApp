@@ -8,6 +8,7 @@ export default function Register() {
     const [registerData, setRegisterData] = useState({
         firstName: "",
         lastName: "",
+        username: "",
         email: "",
         password: "",
         confirmPassword: ""
@@ -15,6 +16,7 @@ export default function Register() {
 
     const [passwordMatch, setPasswordMatch] = useState(false)
     const [duplicateEmail, setDuplicateEmail] = useState(false)
+    const [validUsername, setValidUsername] = useState(true)
 
     const confirmPassword = () => {
         if (registerData.confirmPassword != "" &&
@@ -35,7 +37,6 @@ export default function Register() {
             validator.isEmail(registerData.email) &&
             passwordMatch == false
         ) {
-            console.log("Correct!!!")
             fetch('http://localhost:8000/api/register', {
                 method: 'POST',
                 headers: {
@@ -44,16 +45,32 @@ export default function Register() {
                 body: JSON.stringify(registerData),
                 credentials: 'include'
             })
-                .then(response => console.log(response))
-                .then(data => {
-                    setDuplicateEmail(false);
-                    console.log(data);
-                    window.location.href = '/dashboard';
+                .then(async (response) => {
+                    const data = await response.json(); 
+                    if (!response.ok) {
+                        // console.error(data);
+                        if (data === "Email already exists") {
+                            console.log("Email already exists");
+                            setDuplicateEmail(true);
+                        } else {
+                            setDuplicateEmail(false);
+                        }
+                        if (data === "Username already exists") {
+                            console.log("Username already exists");
+                            setValidUsername(false);
+                        } else {
+                            setValidUsername(true);
+                        }
+                    } else {
+                        setDuplicateEmail(false);
+                        setValidUsername(true);
+                        console.log(data);
+                        window.location.href = "/dashboard";
+                    }
                 })
-                .catch(error => {
-                    console.log(error);
-                    setDuplicateEmail(true);
-                })
+                .catch((error) => {
+                    console.error("Fetch error:", error);
+                });
         }
     }
 
@@ -154,8 +171,22 @@ export default function Register() {
                                 />
                             </div>
 
-                            <div className="col-span-6">
-                                <label htmlFor="Email" className="block text-sm font-medium text-gray-700"> Email {duplicateEmail && <span className="invalid-text"> - Username already taken</span>}</label>
+                            <div className="col-span-6 sm:col-span-3">
+                                <label htmlFor="Email" className="block text-sm font-medium text-gray-700"> Username {!validUsername && <span className="invalid-text"> - Username already taken</span>}</label>
+
+                                <input
+                                    type="text"
+                                    id="Username"
+                                    name="username"
+                                    value={registerData.username}
+                                    onChange={
+                                        (e) => setRegisterData({ ...registerData, username: e.target.value })}
+                                    className="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm"
+                                />
+                            </div>
+
+                            <div className="col-span-6 sm:col-span-3">
+                                <label htmlFor="Email" className="block text-sm font-medium text-gray-700"> Email {duplicateEmail && <span className="invalid-text"> - Email already taken</span>}</label>
 
                                 <input
                                     type="email"
