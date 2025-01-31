@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -54,6 +55,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			userID, err := refreshAccessToken(w, refreshToken)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
+				json.NewEncoder(w).Encode("refresh token not found")
 				return
 			}
 			fmt.Println("Refreshed access token")
@@ -109,7 +111,7 @@ func refreshAccessToken(w http.ResponseWriter, refreshToken string) (string, err
 	userID, err := redis.FindRefreshToken(refreshToken)
 	if err != nil {
 		fmt.Println("Failed to find refresh token")
-		return "", fmt.Errorf("failed to find refresh token")
+		return "", fmt.Errorf("refresh token not found")
 	}
 	accessToken, err := auth.CreateAccessToken(userID)
 	if err != nil {
