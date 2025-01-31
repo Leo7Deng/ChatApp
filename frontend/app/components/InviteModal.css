@@ -2,9 +2,16 @@
     max-height: 30vh;
     overflow: scroll;
     border: 1px solid hsl(0, 0%, 90%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-top: 0.6rem;
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
 }
 
-li {
+.user-item {
+    margin-bottom: 0.6rem;
     color: hsl(0, 0%, 18%);
 }
 

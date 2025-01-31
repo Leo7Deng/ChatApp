@@ -7,44 +7,62 @@ interface InviteModalProps {
     circleId: string;
 }
 
-function InviteModal({ isOpen, setOpen, circleId}: InviteModalProps) {
-    const [users, setUsers] = useState([]);
+function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
+    interface User {
+        id: string;
+        username: string;
+        checked: boolean;
+    }
+    
+    const [users, setUsers] = useState<User[]>([]);
     useEffect(() => {
-            async function fetchInviteUsers() {
-                const headers = {
-                    'Content-Type': 'application/json',
-                };
-                const body = {
-                    circle_id: circleId,
-                };
-                fetch('http://localhost:8000/api/circles/invite', {
-                    method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify(body),
-                    credentials: 'include'
+        async function fetchInviteUsers() {
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            const body = {
+                circle_id: circleId,
+            };
+            fetch('http://localhost:8000/api/circles/invite', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(body),
+                credentials: 'include'
+            })
+                .then(async (response) => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        console.log("Error:", data);
+                    }
+                    else {
+                        console.log("Data:", data);
+                        const mappedUsers = data.map((user: any) => ({
+                            id: user.id,
+                            username: user.username,
+                            checked: false
+                        }));
+                        setUsers(mappedUsers);
+                    }
                 })
-                    .then(async (response) => {
-                        const data = await response.json();
-                        if (!response.ok) {
-                            console.log("Error:", data);
-                        }
-                        else {
-                            console.log("Data:", data);
-                            const mappedUsers = data.map((user: any) => ({
-                                id: user.id,
-                                username: user.username,
-                            }));
-                            setUsers(mappedUsers);
-                        }
-                    })
-                    .catch(error => {
-                        console.log(error);
-                    });
-            }
-            fetchInviteUsers();
-        }, []);
+                .catch(error => {
+                    console.log(error);
+                });
+        }
+        fetchInviteUsers();
+    }, []);
 
-        
+    const handleInviteAllChange = () => {
+        setInviteAll((prev) => !prev);
+        setUsers(users.map(user => ({ ...user, checked: !inviteAll })));
+    };
+
+    const handleUserCheckboxChange = (userId: string) => {
+        setUsers(users.map(user =>
+            user.id === userId ? { ...user, checked: !user.checked } : user
+        ));
+    };
+
+
     const [inviteAll, setInviteAll] = useState(false);
 
     if (!isOpen) return null;
@@ -68,20 +86,22 @@ function InviteModal({ isOpen, setOpen, circleId}: InviteModalProps) {
                             <path d="M 9 2 C 5.1458514 2 2 5.1458514 2 9 C 2 12.854149 5.1458514 16 9 16 C 10.747998 16 12.345009 15.348024 13.574219 14.28125 L 14 14.707031 L 14 16 L 20 22 L 22 20 L 16 14 L 14.707031 14 L 14.28125 13.574219 C 15.348024 12.345009 16 10.747998 16 9 C 16 5.1458514 12.854149 2 9 2 z M 9 4 C 11.773268 4 14 6.2267316 14 9 C 14 11.773268 11.773268 14 9 14 C 6.2267316 14 4 11.773268 4 9 C 4 6.2267316 6.2267316 4 9 4 z"></path>
                         </svg>
                     </div>
-                    <div className="flex users my-4 rounded-md p-2 gap-3 shadow-sm">
+                    <div className="flex users my-4 rounded-md gap-3 shadow-sm">
                         <ul>
-                            {users.map((user: any) => (
-                                <li key={user.id} className="flex items-center gap-2">
+                            {users.map((user) => (
+                                <label key={user.id} className="user-item flex items-center gap-2">
                                     <div className="flex items-center">
                                         <input
                                             type="checkbox"
-                                            className="size-5 rounded border-gray-300 text-blue-500 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                                            className="size-5 rounded border-gray-300 text-blue-500 shadow-sm focus:ring-0"
+                                            checked={user.checked}
+                                            onChange={() => handleUserCheckboxChange(user.id)}
                                         />
                                     </div>
                                     <div className="flex items-center">
                                         <p className="font-medium text-sm text-gray-500">{user.username}</p>
                                     </div>
-                                </li>
+                                </label>
                             ))}
                         </ul>
                     </div>
@@ -104,9 +124,9 @@ function InviteModal({ isOpen, setOpen, circleId}: InviteModalProps) {
                             &#8203;
                             <input
                                 type="checkbox"
-                                className="size-5 rounded border-gray-300 text-blue-500 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                                className="size-5 rounded border-gray-300 text-blue-500 shadow-sm focus:ring-0"
                                 checked={inviteAll}
-                                onChange={() => setInviteAll((prev) => !prev)}
+                                onChange={handleInviteAllChange}
                             />
                         </div>
                         <div className="flex items-center">

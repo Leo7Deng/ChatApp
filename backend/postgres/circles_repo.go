@@ -189,7 +189,7 @@ func GetInviteUsersInCircle(userID string, circleID string) ([]models.User, erro
 	rows, err := pool.Query(
 		context.Background(),
 		`
-		SELECT u.id, u.username
+		SELECT DISTINCT u.id, u.username
 		FROM users u
 		LEFT JOIN users_circles uc ON u.id = uc.user_id
 		WHERE u.id != $1
