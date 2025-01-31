@@ -3,6 +3,7 @@
 import "./Dashboard.css"
 import React, { useEffect, useRef, useState } from "react";
 import CreateCircleModal from "./CreateCircleModal";
+import InviteModal from "./InviteModal";
 
 interface Circle {
     id: string;
@@ -52,6 +53,17 @@ export default function Dashboard() {
     const handleClose = (event: HandleCloseEvent) => {
         if (event.target.classList.contains('modal-container')) {
             setOpenModal(false);
+        }
+    };
+
+    // Invite users to circle
+    const [openInviteModal, setOpenInviteModal] = useState(false);
+    function handleOpenInviteModal() {
+        setOpenInviteModal(true);
+    }
+    const handleInviteClose = (event: HandleCloseEvent) => {
+        if (event.target.classList.contains('modal-container')) {
+            setOpenInviteModal(false);
         }
     };
 
@@ -331,12 +343,17 @@ export default function Dashboard() {
                         <CreateCircleModal isOpen={openModal} setOpen={() => setOpenModal(false)} />
                     </div>
                 </div>}
+                {openInviteModal && <div className="modal-container" onClick={handleInviteClose}>
+                    <div className="modal inset-0 bg-black bg-opacity-50 z-50">
+                        <InviteModal isOpen={openInviteModal} setOpen={() => setOpenInviteModal(false)} />
+                    </div>
+                </div>}
             </div>
             <div className="chat-container">
                 <div className="chat-title">
                     <h1>{circles.find((circle) => circle.id === selectedCircleID)?.name}&nbsp;</h1>
                     <div className="chat-menu">
-                        <button className="group relative rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 h-full">
+                        <button className="group relative rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 h-full" onClick={handleOpenInviteModal}>
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="size-5 opacity-75"

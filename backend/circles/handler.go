@@ -45,7 +45,7 @@ func CreateCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 	if err != nil {
 		fmt.Printf("HTTP 400 bad request\n")
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("HTTP 400 bad request\n")
+		json.NewEncoder(w).Encode("HTTP 400 bad request")
 		return
 	}
 	userID := r.Context().Value(middleware.UserIDKey).(string)
@@ -56,7 +56,7 @@ func CreateCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 	if err != nil {
 		fmt.Printf("Failed to create circle\n")
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode("Failed to create circle\n")
+		json.NewEncoder(w).Encode("Failed to create circle")
 		return
 	}
 
@@ -71,13 +71,13 @@ func CreateCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 	if err != nil {
 		fmt.Printf("Failed to marshal circle\n")
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode("Failed to marshal circle\n")
+		json.NewEncoder(w).Encode("Failed to marshal circle")
 		return
 	}
 	hub.SendToUser(userID, circleJSON)
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode("Circle created\n")
+	json.NewEncoder(w).Encode("Circle created")
 }
 
 func DeleteCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets.Hub) {

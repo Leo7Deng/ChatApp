@@ -20,7 +20,7 @@
 
 .modal {
     width: 35vw;
-    height: 25vh;
+    max-height: 50vh;
     background: white;
     border-radius: 10px;
 }

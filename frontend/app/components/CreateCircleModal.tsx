@@ -29,7 +29,7 @@ function CreateCircleModal({ isOpen, setOpen }: CreateCircleModalProps) {
 
     return (
         <div className="mx-auto max-w-screen-xl px-4 py-4 sm:px-6 lg:px-8 relative z-10 focus:outline-none">
-            <form action="#" className="mx-auto mb-0 mt-8 max-w-md space-y-4">
+            <form action="#" className="mx-auto mb-4 mt-6 max-w-md space-y-4">
                 <div>
                     <div className="relative">
                         <input

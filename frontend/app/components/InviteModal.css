@@ -1,0 +1,9 @@
+.users {
+    max-height: 30vh;
+    overflow: scroll;
+    border: 1px solid hsl(0, 0%, 18%);
+}
+
+li {
+    color: hsl(0, 0%, 18%);
+}
