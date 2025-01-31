@@ -80,7 +80,7 @@ export default function Dashboard() {
         const headers = {
             'Content-Type': 'application/json',
         };
-        fetch(`http://localhost:8000/api/circles/${selectedCircleID}`, {
+        fetch(`http://localhost:8000/api/circles/delete/${selectedCircleID}`, {
             method: 'DELETE',
             headers: headers,
             credentials: 'include',
@@ -353,7 +353,7 @@ export default function Dashboard() {
                 </div>}
                 {openInviteModal && <div className="modal-container" onClick={handleInviteClose}>
                     <div className="modal inset-0 bg-black bg-opacity-50 z-50">
-                        <InviteModal isOpen={openInviteModal} setOpen={() => setOpenInviteModal(false)} />
+                        <InviteModal isOpen={openInviteModal} setOpen={() => setOpenInviteModal(false)} circleId={selectedCircleID} />
                     </div>
                 </div>}
             </div>

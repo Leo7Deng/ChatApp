@@ -1,12 +1,50 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import "./InviteModal.css"
 
 interface InviteModalProps {
     isOpen: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    circleId: string;
 }
 
-function InviteModal({ isOpen, setOpen }: InviteModalProps) {
+function InviteModal({ isOpen, setOpen, circleId}: InviteModalProps) {
+    const [users, setUsers] = useState([]);
+    useEffect(() => {
+            async function fetchInviteUsers() {
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+                const body = {
+                    circle_id: circleId,
+                };
+                fetch('http://localhost:8000/api/circles/invite', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(body),
+                    credentials: 'include'
+                })
+                    .then(async (response) => {
+                        const data = await response.json();
+                        if (!response.ok) {
+                            console.log("Error:", data);
+                        }
+                        else {
+                            console.log("Data:", data);
+                            const mappedUsers = data.map((user: any) => ({
+                                id: user.id,
+                                username: user.username,
+                            }));
+                            setUsers(mappedUsers);
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+            }
+            fetchInviteUsers();
+        }, []);
+
+        
     const [inviteAll, setInviteAll] = useState(false);
 
     if (!isOpen) return null;
@@ -32,21 +70,19 @@ function InviteModal({ isOpen, setOpen }: InviteModalProps) {
                     </div>
                     <div className="flex users my-4 rounded-md p-2 gap-3 shadow-sm">
                         <ul>
-                            <li>user 1</li>
-                            <li>user 2</li>
-                            <li>user 3</li>
-                            <li>user 4</li>
-                            <li>user 5</li>
-                            <li>user 1</li>
-                            <li>user 2</li>
-                            <li>user 3</li>
-                            <li>user 4</li>
-                            <li>user 5</li>
-                            <li>user 1</li>
-                            <li>user 2</li>
-                            <li>user 3</li>
-                            <li>user 4</li>
-                            <li>user 5</li>
+                            {users.map((user: any) => (
+                                <li key={user.id} className="flex items-center gap-2">
+                                    <div className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            className="size-5 rounded border-gray-300 text-blue-500 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                                        />
+                                    </div>
+                                    <div className="flex items-center">
+                                        <p className="font-medium text-sm text-gray-500">{user.username}</p>
+                                    </div>
+                                </li>
+                            ))}
                         </ul>
                     </div>
                 </div>

@@ -38,6 +38,32 @@ func GetCirclesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(circles)
 }
 
+func GetInviteUsersHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middleware.UserIDKey).(string)
+	type Circle struct {
+		ID string `json:"circle_id"`
+	}
+	var circle Circle
+	err := json.NewDecoder(r.Body).Decode(&circle)
+	fmt.Println(json.NewDecoder(r.Body))
+	if err != nil {
+		fmt.Printf("HTTP 400 bad request\n")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("HTTP 400 bad request")
+		return
+	}
+	fmt.Println("Circle ID INVITE: " + circle.ID + " USER ID: " + userID)
+	users, err := postgres.GetInviteUsersInCircle(userID, circle.ID)
+	if err != nil {
+		fmt.Printf("Failed to get users in circle\n")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("Failed to get users in circle")
+		return
+	}
+	fmt.Printf("Users in circle: %v\n", users)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(users)
+}
 
 func CreateCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets.Hub) {
 	var circleData models.CircleData
@@ -81,7 +107,7 @@ func CreateCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 }
 
 func DeleteCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets.Hub) {
-	circleID := strings.TrimPrefix(r.URL.Path, "/api/circles/")
+	circleID := strings.TrimPrefix(r.URL.Path, "/api/circles/delete/")
 	fmt.Println("Circle ID: " + circleID)
 
 	if circleID == "" {

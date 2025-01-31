@@ -82,3 +82,37 @@ func InsertRefreshToken(userID string, token uuid.UUID) {
 		fmt.Fprintf(os.Stderr, "Unable to insert into PSQL: %v\n", err)
 	}
 }
+
+func GetInviteUsersInCircle(userID string, circleID string) ([]models.User, error) {
+	var users []models.User
+	rows, err := pool.Query(
+		context.Background(),
+		`
+		SELECT u.id, u.username
+		FROM users u
+		FULL OUTER JOIN users_circles uc ON u.id = uc.user_id
+		WHERE uc.user_id != $1
+		AND uc.circle_id != $2
+		ORDER BY u.username ASC
+		LIMIT 10;
+		`,
+		circleID,
+		userID,
+	)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to query PSQL: %v\n", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var user models.User
+		err = rows.Scan(&user.ID, &user.Username)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to scan row: %v\n", err)
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
