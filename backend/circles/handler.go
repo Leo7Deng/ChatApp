@@ -106,6 +106,49 @@ func CreateCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 	json.NewEncoder(w).Encode("Circle created")
 }
 
+func AddUsersToCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets.Hub) {
+	userID := r.Context().Value(middleware.UserIDKey).(string)
+	type AddData struct {
+		ID     string   `json:"circle_id"`
+		UserID []string `json:"users"`
+	}
+	fmt.Println("User " + userID + " is adding " + fmt.Sprint(userID) + " to circle")
+	var circle AddData
+	err := json.NewDecoder(r.Body).Decode(&circle)
+	if err != nil {
+		fmt.Printf("HTTP 400 bad request\n")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("HTTP 400 bad request")
+		return
+	}
+	fmt.Println("Circle ID: " + circle.ID + " User IDs: " + fmt.Sprint(circle.UserID))
+
+	err = postgres.AddUsersToCircle(circle.ID, circle.UserID)
+	if err != nil {
+		fmt.Printf("Failed to add users to circle\n")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("Failed to add users to circle")
+		return
+	}
+
+	response := struct {
+		Type string `json:"type"`
+	}{
+		Type: "add-users-to-circle",
+	}
+	circleJSON, err := json.Marshal(response)
+	if err != nil {
+		fmt.Printf("Failed to marshal circle\n")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("Failed to marshal circle")
+		return
+	}
+	hub.Broadcast(circleJSON)
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode("Users added to circle")
+}
+
 func DeleteCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets.Hub) {
 	circleID := strings.TrimPrefix(r.URL.Path, "/api/circles/delete/")
 	fmt.Println("Circle ID: " + circleID)

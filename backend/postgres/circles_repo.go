@@ -1,12 +1,11 @@
-
 package postgres
 
 import (
 	"context"
 	"fmt"
+	"github.com/Leo7Deng/ChatApp/models"
 	"os"
 	"time"
-	"github.com/Leo7Deng/ChatApp/models"
 )
 
 func GetUserCircles(userID string) ([]models.Circle, error) {
@@ -160,7 +159,7 @@ func DeleteCircle(userID string, circleID string) error {
 		circleID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error deleting from circles: %v\n",
-		err)
+			err)
 	}
 
 	_, err = tx.Exec(
@@ -172,7 +171,7 @@ func DeleteCircle(userID string, circleID string) error {
 		circleID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error deleting from users_circles: %v\n",
-		err)
+			err)
 		return err
 	}
 	err = tx.Commit(ctx)
@@ -189,11 +188,15 @@ func GetInviteUsersInCircle(userID string, circleID string) ([]models.User, erro
 	rows, err := pool.Query(
 		context.Background(),
 		`
-		SELECT DISTINCT u.id, u.username
+		SELECT DISTINCT u.id, u.username 
 		FROM users u
-		LEFT JOIN users_circles uc ON u.id = uc.user_id
-		WHERE u.id != $1
-		AND (uc.circle_id IS NULL OR uc.circle_id != $2)
+		WHERE u.id != $1 
+		AND NOT EXISTS (
+			SELECT 1 
+			FROM users_circles uc 
+			WHERE u.id = uc.user_id 
+			AND uc.circle_id = $2 
+		)
 		ORDER BY u.username ASC
 		LIMIT 10;
 		`,

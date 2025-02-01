@@ -75,6 +75,13 @@ func main() {
 			}),
 		),
 	))
+	mux.Handle("/api/circles/invite/add", middleware.AddCorsHeaders(
+		middleware.AuthMiddleware(
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				circles.AddUsersToCircleHandler(w, r, hub)
+			}),
+		),
+	))
 	mux.HandleFunc("/ws", middleware.AddCorsHeaders(
 		middleware.AuthMiddleware(
 			websockets.ServeWs(hub),

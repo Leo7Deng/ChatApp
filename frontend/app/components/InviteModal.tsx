@@ -62,6 +62,37 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
         ));
     };
 
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const invitedUsers = users.filter(user => user.checked).map(user => user.id);
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        const body = {
+            circle_id: circleId,
+            users: invitedUsers,
+        };
+        console.log(body);
+        fetch('http://localhost:8000/api/circles/invite/add', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(body),
+            credentials: 'include'
+        })
+            .then(async (response) => {
+                const data = await response.json();
+                if (!response.ok) {
+                    console.log("Error:", data);
+                }
+                else {
+                    console.log("Data:", data);
+                    setOpen(false);
+                }
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    };
 
     const [inviteAll, setInviteAll] = useState(false);
 
@@ -69,7 +100,7 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
 
     return (
         <div className="mx-auto max-w-screen-xl px-4 py-2 sm:px-6 lg:px-8 relative z-10 focus:outline-none">
-            <form action="#" className="mx-auto mb-4 mt-6 max-w-md space-y-4">
+            <form action="#" className="mx-auto mb-4 mt-6 max-w-md space-y-4" onSubmit={handleSubmit}>
                 <div>
                     <div className="search w-full relative rounded-md">
                         <input
@@ -111,15 +142,11 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
                     <button
                         type="submit"
                         className="inline-block rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            setOpen(false);
-                        }}
                     >
                         Submit
                     </button>
 
-                    <label htmlFor="Option1" className="flex cursor-pointer items-center gap-2">
+                    <label className="flex cursor-pointer items-center gap-2">
                         <div className="flex items-center">
                             &#8203;
                             <input
