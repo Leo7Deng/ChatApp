@@ -1,13 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
-	// "time"
+	"sync"
 
 	"github.com/Leo7Deng/ChatApp/auth"
 	"github.com/Leo7Deng/ChatApp/circles"
+	"github.com/Leo7Deng/ChatApp/kafka"
 	"github.com/Leo7Deng/ChatApp/middleware"
 	"github.com/Leo7Deng/ChatApp/postgres"
 	"github.com/Leo7Deng/ChatApp/redis"
@@ -42,6 +44,24 @@ func main() {
 	hub := websockets.NewHub()
 	go hub.Run() 
 	fmt.Println("Websocket server started", hub)
+
+	// Kafka setup
+	ctx, cancel := context.WithCancel(context.Background())
+	var wg sync.WaitGroup
+	kafka.InitKafka(ctx, &wg) // Start Kafka producer & consumer
+
+
+	// client, ctx := kafka.KafkaClient()
+	// defer client.Close()
+
+	// kafka.ConsumeMessages(client, ctx)
+
+	// go func() {
+	// 	for {
+	// 		kafka.ProduceMessage(client, ctx, "foo", "Hello from the server")
+	// 		<-time.After(5 * time.Second)
+	// 	}
+	// }()
 
 	// asyncronously broadcast message every 5 seconds
 	// go func() {
@@ -87,5 +107,12 @@ func main() {
 			websockets.ServeWs(hub),
 		),
 	))
-	log.Fatal(srv.ListenAndServe())
+	
+	
+	go func() {
+		log.Fatal(srv.ListenAndServe())
+	}()
+
+	wg.Wait()
+	cancel()
 }
