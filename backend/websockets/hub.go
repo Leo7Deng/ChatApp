@@ -3,8 +3,10 @@ package websockets
 import (
 	"encoding/json"
 	"log"
+	"os"
 
 	"github.com/Leo7Deng/ChatApp/models"
+	"github.com/Leo7Deng/ChatApp/postgres"
 )
 
 // Hub maintains the set of active clients and broadcasts messages to the
@@ -41,6 +43,13 @@ func NewHub() *Hub {
 }
 
 func (h *Hub) Run() {
+	var err error
+	h.circleUsers, err = postgres.LoadCircleUserMap()
+	if err != nil {
+		log.Printf("Failed to load circle user map: %v\n", err)
+		os.Exit(1)
+	}
+
 	for {
 		select {
 		case client := <-h.register:

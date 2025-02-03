@@ -220,3 +220,41 @@ func GetInviteUsersInCircle(userID string, circleID string) ([]models.User, erro
 	}
 	return users, nil
 }
+
+func LoadCircleUserMap() (map[string]map[string]bool, error) {
+	ctx := context.Background()
+	conn, err := pool.Acquire(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
+		return nil, err
+	}
+	defer conn.Release()
+
+	rows, err := conn.Query(
+		ctx,
+		`
+		SELECT user_id, circle_id
+		FROM users_circles;
+		`,
+	)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to query PSQL: %v\n", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	circleUsers := make(map[string]map[string]bool)
+	for rows.Next() {
+		var userID, circleID string
+		err = rows.Scan(&userID, &circleID)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to scan row: %v\n", err)
+			return nil, err
+		}
+		if _, ok := circleUsers[circleID]; !ok {
+			circleUsers[circleID] = make(map[string]bool)
+		}
+		circleUsers[circleID][userID] = true
+	}
+	return circleUsers, nil
+}

@@ -146,3 +146,7 @@ func ServeWs(hub *Hub) http.HandlerFunc {
 		go client.readPump()
 	}
 }
+
+
+// Still need to add users to memory on load of hub
+
