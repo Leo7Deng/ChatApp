@@ -131,19 +131,7 @@ func AddUsersToCircleHandler(w http.ResponseWriter, r *http.Request, hub *websoc
 		return
 	}
 
-	response := struct {
-		Type string `json:"type"`
-	}{
-		Type: "add-users-to-circle",
-	}
-	circleJSON, err := json.Marshal(response)
-	if err != nil {
-		fmt.Printf("Failed to marshal circle\n")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode("Failed to marshal circle")
-		return
-	}
-	hub.Broadcast(circleJSON)
+	hub.AddUsersToCircle(circle.ID, circle.UserID)
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Users added to circle")

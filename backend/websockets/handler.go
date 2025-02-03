@@ -51,6 +51,9 @@ type Client struct {
 
 	// userID of the client
 	userID string
+
+	// list of circles the user is in
+	circles []string
 }
 
 // readPump pumps messages from the websocket connection to the hub.
