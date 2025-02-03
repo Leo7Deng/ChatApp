@@ -48,7 +48,7 @@ func main() {
 	// Kafka setup
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
-	kafka.InitKafka(ctx, &wg) // Start Kafka producer & consumer
+	kafka.InitKafka(ctx, &wg, hub) // Start Kafka producer & consumer
 
 
 	// client, ctx := kafka.KafkaClient()
