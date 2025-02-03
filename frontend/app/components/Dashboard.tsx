@@ -4,11 +4,32 @@ import "./Dashboard.css"
 import React, { useEffect, useRef, useState } from "react";
 import CreateCircleModal from "./CreateCircleModal";
 import InviteModal from "./InviteModal";
+import { useCookies } from "react-cookie";
 
 interface Circle {
     id: string;
     name: string;
     created_at: string;
+}
+
+interface WebSocketMessage {
+    type: "message" | "circle"; 
+    action: "create" | "delete";
+    message?: Message;
+    circle?: Circle;
+}
+
+interface Message {
+    circleId: string;
+    content: string;
+    createdAt: string;
+    authorId: string;
+}
+
+interface Circle {
+    id: string;
+    name: string;
+    createdAt?: string;
 }
 
 export default function Dashboard() {
@@ -116,18 +137,30 @@ export default function Dashboard() {
     }, []);
 
     // Send message to WebSocket
+    const [cookies] = useCookies(['user-id']);
+    const userID = cookies['user-id'];
     interface HandleEnterEvent extends React.KeyboardEvent<HTMLInputElement> { }
     const handleEnter = (event: HandleEnterEvent) => {
+        if (!userID) {
+            window.location.href = "/login";
+            return;
+        }
         if (event.key === 'Enter') {
             console.log("Enter key pressed");
-            const message = JSON.stringify({
+            const messagePayload: WebSocketMessage = {
                 type: "message",
-                message: event.currentTarget.value
-            });
-            console.log("Sending message:", message);
+                action: "create",
+                message: {
+                    circleId: selectedCircleID,
+                    content: event.currentTarget.value,
+                    createdAt: new Date().toISOString(),
+                    authorId: userID,
+                },
+            };
+            console.log("Sending message:", messagePayload);
             event.currentTarget.value = '';
             if (ws.current) {
-                ws.current.send(message);
+                ws.current.send(JSON.stringify(messagePayload));
             }
         }
     };

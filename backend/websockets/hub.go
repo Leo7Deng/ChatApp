@@ -84,21 +84,11 @@ func (h *Hub) Run() {
 				}
 			}
 		case message := <-h.broadcast:
-			log.Printf("Hub websocket broadcast: %s\n", message)
-			var msg models.Message
+			log.Printf("Client sent over websocket: %s\n", message)
+			var msg models.WebsocketMessage
 			err := json.Unmarshal(message, &msg)
 			if err != nil {
 				log.Printf("Failed to unmarshal message: %v\n", err)
-			}
-			for userID := range h.circleUsers[msg.CircleID] {
-				for client := range h.userClients[userID] {
-					select {
-					case client.send <- message:
-					default:
-						close(client.send)
-						delete(h.clients, client)
-					}
-				}
 			}
 		}
 	}
