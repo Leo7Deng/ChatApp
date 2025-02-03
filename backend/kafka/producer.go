@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"encoding/json"
 
 	"github.com/IBM/sarama"
+	"github.com/Leo7Deng/ChatApp/models"
 )
 
 var brokers = []string{"localhost:9092"}
@@ -31,12 +33,23 @@ func StartProducer(ctx context.Context) {
 			fmt.Println("Producer shutting down...")
 			return
 		default:
-			msg := &sarama.ProducerMessage{
-				Topic: topic,
-				Value: sarama.StringEncoder(fmt.Sprintf("Hello from server at %s", time.Now().Format(time.RFC3339))),
+			message := models.Message{
+				Content: "Hello from server",
+				CreatedAt: time.Now().String(),
+				AuthorID: "1",
+				CircleID: "1",
+			}
+			JsonMessage, err := json.Marshal(message)
+			if err != nil {
+				fmt.Printf("Failed to marshal message: %v\n", err)
 			}
 
-			_, _, err := producer.SendMessage(msg)
+			msg := &sarama.ProducerMessage{
+				Topic: topic,
+				Value: sarama.StringEncoder(JsonMessage),
+			}
+
+			_, _, err = producer.SendMessage(msg)
 			if err != nil {
 				fmt.Printf("Failed to send message: %v\n", err)
 			} else {

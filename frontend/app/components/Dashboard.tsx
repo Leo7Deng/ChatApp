@@ -401,7 +401,7 @@ export default function Dashboard() {
                 <div className="chat-placeholder">
                     {selectedCircleID !== "" && (
                         <div>
-                            <h2>Chat text</h2>
+                            
                         </div>
                     )}
                 </div>

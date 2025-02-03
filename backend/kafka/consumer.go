@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
-
+	"encoding/json"
 	"github.com/IBM/sarama"
+	"github.com/Leo7Deng/ChatApp/models"
 )
 
 // StartConsumer continuously logs incoming messages
@@ -30,7 +31,13 @@ func StartConsumer(ctx context.Context) {
 	for {
 		select {
 		case msg := <-partitionConsumer.Messages():
-			fmt.Printf("Received message: %s\n", string(msg.Value))
+			fmt.Printf("Kafka message: %s\n", string(msg.Value))
+			var message models.Message
+			err := json.Unmarshal(msg.Value, &message)
+			if err != nil {
+				fmt.Printf("Failed to unmarshal message: %v\n", err)
+			}
+
 		case <-ctx.Done():
 			fmt.Println("Consumer shutting down...")
 			return

@@ -52,7 +52,7 @@ func (h *Hub) Run() {
 				}
 			}
 		case message := <-h.broadcast:
-			log.Printf("Received message: %s", message)
+			log.Printf("Websocket message: %s", message)
 			for client := range h.clients {
 				select {
 				case client.send <- message:
