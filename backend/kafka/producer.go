@@ -34,10 +34,11 @@ func StartProducer(ctx context.Context) {
 			return
 		default:
 			message := models.Message{
+				CircleID: "1",
+				Type: "message",
 				Content: "Hello from server",
 				CreatedAt: time.Now().String(),
 				AuthorID: "1",
-				CircleID: "1",
 			}
 			JsonMessage, err := json.Marshal(message)
 			if err != nil {

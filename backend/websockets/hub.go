@@ -84,7 +84,7 @@ func (h *Hub) Run() {
 				}
 			}
 		case message := <-h.broadcast:
-			log.Printf("Websocket message: %s\n", message)
+			log.Printf("Hub websocket broadcast: %s\n", message)
 			var msg models.Message
 			err := json.Unmarshal(message, &msg)
 			if err != nil {
@@ -104,13 +104,41 @@ func (h *Hub) Run() {
 	}
 }
 
-func (h *Hub) Broadcast(message []byte) {
-	h.broadcast <- message
+func (h *Hub) Broadcast(message models.WebsocketMessage) {
+	msg, err := json.Marshal(message)
+	if err != nil {
+		log.Printf("Failed to marshal message: %v\n", err)
+	}
+	log.Printf("Websocket broadcast: %s\n", msg)
+	if message.Type == "circle" {
+		for userID := range h.circleUsers[message.Circle.ID] {
+			for client := range h.userClients[userID] {
+				client.send <- msg
+			}
+		}
+	} else if message.Type == "message" {
+		for userID := range h.circleUsers[message.Message.CircleID] {
+			for client := range h.userClients[userID] {
+				client.send <- msg
+			}
+		}
+	} else {
+		log.Printf("Unknown message type: %s\n", message.Type)
+	}
 }
 
-func (h *Hub) SendToUser(userID string, message []byte) {
-	for client := range h.clients {
-		client.hub.broadcast <- message
+func (h *Hub) SendToUser(userID string, message models.WebsocketMessage) {
+	msg, err := json.Marshal(message)
+	if err != nil {
+		log.Printf("Failed to marshal message: %v\n", err)
+	}
+	for client := range h.userClients[userID] {
+		select {
+		case client.send <- msg:
+		default:
+			close(client.send)
+			delete(h.clients, client)
+		}
 	}
 }
 

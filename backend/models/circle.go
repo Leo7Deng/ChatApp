@@ -8,6 +8,6 @@ type Circle struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type CircleData struct {
+type CreateCircleData struct {
 	Name string `json:"name"`
 }

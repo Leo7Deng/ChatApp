@@ -147,7 +147,7 @@ func DeleteCircle(userID string, circleID string) error {
 	}
 	if role != "admin" {
 		fmt.Fprintf(os.Stderr, "User is not admin of circle\n")
-		return fmt.Errorf("user is not admin of circle")
+		return fmt.Errorf("permission error")
 	}
 
 	_, err = tx.Exec(

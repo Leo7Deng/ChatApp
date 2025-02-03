@@ -66,8 +66,8 @@ func GetInviteUsersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets.Hub) {
-	var circleData models.CircleData
-	err := json.NewDecoder(r.Body).Decode(&circleData)
+	var createCircleData models.CreateCircleData
+	err := json.NewDecoder(r.Body).Decode(&createCircleData)
 	if err != nil {
 		fmt.Printf("HTTP 400 bad request\n")
 		w.WriteHeader(http.StatusBadRequest)
@@ -78,29 +78,22 @@ func CreateCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 	fmt.Println("Got userID from create circles: " + userID)
 
 	var circle models.Circle
-	circle, err = postgres.CreateCircle(userID, circleData.Name)
+	circle, err = postgres.CreateCircle(userID, createCircleData.Name)
 	if err != nil {
 		fmt.Printf("Failed to create circle\n")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode("Failed to create circle")
 		return
 	}
+	hub.AddUsersToCircle(circle.ID, []string{userID})
 
-	response := struct {
-		Type string        `json:"type"`
-		Data models.Circle `json:"data"`
-	}{
-		Type: "add-circle",
-		Data: circle,
+	websocketMessage := models.WebsocketMessage{
+		Type: "circle",
+		Action: "create",
+		Message: nil,
+		Circle: &circle,
 	}
-	circleJSON, err := json.Marshal(response)
-	if err != nil {
-		fmt.Printf("Failed to marshal circle\n")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode("Failed to marshal circle")
-		return
-	}
-	hub.SendToUser(userID, circleJSON)
+	hub.Broadcast(websocketMessage)
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Circle created")
@@ -152,28 +145,25 @@ func DeleteCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 
 	err := postgres.DeleteCircle(userID, circleID)
 	if err != nil {
+		if err.Error() == "permission error" {
+			fmt.Printf("User is not admin of circle\n")
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode("user is not admin of circle")
+			return
+		}
 		fmt.Printf("Failed to delete circle\n")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode("Failed to delete circle\n")
 		return
 	}
 
-	response := struct {
-		Type string        `json:"type"`
-		Data models.Circle `json:"data"`
-	}{
-		Type: "remove-circle",
-		Data: models.Circle{ID: circleID},
+	websocketMessage := models.WebsocketMessage{
+		Type: "circle",
+		Action: "delete",
+		Message: nil,
+		Circle: &models.Circle{ID: circleID},
 	}
-
-	circleJSON, err := json.Marshal(response)
-	if err != nil {
-		fmt.Printf("Failed to marshal circle\n")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode("Failed to marshal circle\n")
-		return
-	}
-	hub.Broadcast(circleJSON)
+	hub.Broadcast(websocketMessage)
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Circle deleted\n")

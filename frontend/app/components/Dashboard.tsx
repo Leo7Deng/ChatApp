@@ -85,9 +85,18 @@ export default function Dashboard() {
             headers: headers,
             credentials: 'include',
         })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Data:", data);
+            .then(async (response) => {
+                const data = await response.json();
+                if (!response.ok) {
+                    if (data == "user is not admin of circle") {
+                        alert("You are not an admin of the circle");
+                    }
+                    console.log("data: ", data);
+                }
+                else {
+                    console.log("Data:", data);
+                    setCircles((prevCircles) => prevCircles.filter((circle) => circle.id !== selectedCircleID));
+                }
             })
             .catch(error => {
                 console.log(error);
@@ -131,20 +140,29 @@ export default function Dashboard() {
             try {
                 var parsedData = JSON.parse(e.data);
                 console.log("Parsed data:", parsedData);
-                if (parsedData.type == "add-circle") {
-                    parsedData = parsedData.data;
-                    console.log("Adding circle:", parsedData.id);
-                    const newCircle = {
-                        id: parsedData.id,
-                        name: parsedData.name,
-                        created_at: parsedData.created_at,
-                    };
-                    setCircles((prevCircles) => [...prevCircles, newCircle]);
+                if (parsedData.type == "message") {
+                    console.log("Received message:", parsedData.message);
                 }
-                else if (parsedData.type == "remove-circle") {
-                    const circleID = parsedData.data.id;
-                    console.log("Removing circle with ID:", circleID);
-                    setCircles((prevCircles) => prevCircles.filter((circle) => circle.id !== circleID));
+                else if (parsedData.type == "circle") {
+                    if (parsedData.action == "create") {
+                        parsedData = parsedData.circle;
+                        console.log("Adding circle:", parsedData.id);
+                        const newCircle = {
+                            id: parsedData.id,
+                            name: parsedData.name,
+                            created_at: parsedData.created_at,
+                        };
+                        setCircles((prevCircles) => [...prevCircles, newCircle]);
+                    }
+                    else if (parsedData.action == "delete") {
+                        parsedData = parsedData.circle;
+                        const circleID = parsedData.id;
+                        console.log("Removing circle with ID:", circleID);
+                        setCircles((prevCircles) => prevCircles.filter((circle) => circle.id !== circleID));
+                    }
+                }
+                else {
+                    console.log("Unknown message type:", parsedData.type);
                 }
             } catch (error) {
                 console.error("Error parsing WebSocket message:", error);

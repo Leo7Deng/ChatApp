@@ -73,8 +73,13 @@ func WebsocketConsumer(ctx context.Context, hub *websockets.Hub) {
 			if err != nil {
 				fmt.Printf("Failed to unmarshal message: %v\n", err)
 			}
-
-			hub.Broadcast(msg.Value)
+			websocketMessage := models.WebsocketMessage{
+				Type: "message",
+				Action: "create",
+				Message: &message,
+				Circle: nil,
+			}
+			hub.Broadcast(websocketMessage)
 
 		case <-ctx.Done():
 			fmt.Println("Consumer shutting down...")

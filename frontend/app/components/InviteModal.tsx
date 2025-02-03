@@ -49,7 +49,7 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
                 });
         }
         fetchInviteUsers();
-    }, []);
+    }, [circleId]);
 
     const handleInviteAllChange = () => {
         setInviteAll((prev) => !prev);
