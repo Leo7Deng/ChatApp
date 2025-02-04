@@ -42,6 +42,9 @@ func WebsocketProducer(ctx context.Context, hub *websockets.Hub) {
 				log.Println("Error decoding JSON:", err)
 				break
 			}
+			if websocketMessage.Origin == "server" {
+				continue
+			}
 			switch websocketMessage.Type {
 			case "message":
 				if websocketMessage.Message != nil {

@@ -13,6 +13,7 @@ interface Circle {
 }
 
 interface WebSocketMessage {
+    origin: "server" | "client";
     type: "message" | "circle";
     action: "create" | "delete";
     message?: Message;
@@ -157,6 +158,7 @@ export default function Dashboard() {
         if (event.key === 'Enter') {
             console.log("Enter key pressed");
             const messagePayload: WebSocketMessage = {
+                origin: "client",
                 type: "message",
                 action: "create",
                 message: {
@@ -192,8 +194,21 @@ export default function Dashboard() {
             try {
                 var parsedData = JSON.parse(e.data);
                 console.log("Parsed data:", parsedData);
+                if (parsedData.origin == "client") {
+                    return;
+                }
                 if (parsedData.type == "message") {
                     console.log("Received message:", parsedData.message);
+                    if (parsedData.action == "create") {
+                        parsedData = parsedData.message;
+                        setMessages((prevMessages) => [...prevMessages, parsedData]);
+                    }
+                    else if (parsedData.action == "delete") {
+                        parsedData = parsedData.message;
+                        const messageCreatedAt = parsedData.created_at;
+                        console.log("Removing message with created_at:", messageCreatedAt);
+                        setMessages((prevMessages) => prevMessages.filter((message) => message.created_at !== messageCreatedAt));
+                    }
                 }
                 else if (parsedData.type == "circle") {
                     if (parsedData.action == "create") {

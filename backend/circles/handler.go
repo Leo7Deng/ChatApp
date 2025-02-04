@@ -88,6 +88,7 @@ func CreateCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 	hub.AddUsersToCircle(circle.ID, []string{userID})
 
 	websocketMessage := models.WebsocketMessage{
+		Origin: "server",
 		Type: "circle",
 		Action: "create",
 		Message: nil,
@@ -158,6 +159,7 @@ func DeleteCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 	}
 
 	websocketMessage := models.WebsocketMessage{
+		Origin: "server",
 		Type: "circle",
 		Action: "delete",
 		Message: nil,

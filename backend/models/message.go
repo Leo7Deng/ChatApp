@@ -1,6 +1,7 @@
 package models
 
 type WebsocketMessage struct {
+	Origin  string      `json:"origin"` // user or server
     Type string      `json:"type"` // message or circle
 	Action string       `json:"action"` // create or delete
     Message *Message `json:"message,omitempty"` // optional
