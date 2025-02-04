@@ -39,6 +39,7 @@ export default function Dashboard() {
 
     // Store messages
     const [messages, setMessages] = useState<Message[]>([]);
+    const lastSentMessageTime = useRef("");
 
     // Get circles from the server
     const [circles, setCircles] = useState<Circle[]>([]);
@@ -157,16 +158,19 @@ export default function Dashboard() {
         }
         if (event.key === 'Enter') {
             console.log("Enter key pressed");
+            var currentTime = new Date().toISOString();
+            lastSentMessageTime.current = currentTime;
+            const message: Message = {
+                circle_id: selectedCircleID,
+                content: event.currentTarget.value,
+                created_at: currentTime,
+                author_id: String(userID),
+            }
             const messagePayload: WebSocketMessage = {
                 origin: "client",
                 type: "message",
                 action: "create",
-                message: {
-                    circle_id: selectedCircleID,
-                    content: event.currentTarget.value,
-                    created_at: new Date().toISOString(),
-                    author_id: String(userID),
-                },
+                message: message,
             };
             if (!messagePayload.message) {
                 console.error("Message payload is empty");
@@ -199,8 +203,17 @@ export default function Dashboard() {
                 }
                 if (parsedData.type == "message") {
                     console.log("Received message:", parsedData.message);
-                    if (parsedData.action == "create") {
+                    if (parsedData.action === "create") {
                         parsedData = parsedData.message;
+                        console.log("Adding message:", parsedData.content);
+                        const isDuplicate = lastSentMessageTime.current === parsedData.created_at
+                        if (isDuplicate) {
+                            const sentTime = new Date(parsedData.created_at).getTime();
+                            const receivedTime = new Date().getTime();
+                            const timeDifference = receivedTime - sentTime;
+                            console.log(`Message round-trip time: ${timeDifference}ms`);
+                            return;
+                        }
                         setMessages((prevMessages) => [...prevMessages, parsedData]);
                     }
                     else if (parsedData.action == "delete") {

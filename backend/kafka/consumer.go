@@ -73,6 +73,7 @@ func WebsocketConsumer(ctx context.Context, hub *websockets.Hub) {
 			if err != nil {
 				fmt.Printf("Failed to unmarshal message: %v\n", err)
 			}
+			websocketMessage.Origin = "server"
 			hub.SendWebsocketMessage(websocketMessage)
 		case <-ctx.Done():
 			fmt.Println("Consumer shutting down...")
