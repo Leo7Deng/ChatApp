@@ -108,3 +108,18 @@
     border-left: 1px solid hsl(0, 0%, 87%);
     padding-left: 0.5rem;
 }
+
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    background: rgba(255, 255, 255, 0.3);
+    z-index: 51;
+}
+
+.spinner {
+    color: rgb(0, 0, 0);
+    fill: rgb(255, 255, 255);
+}
