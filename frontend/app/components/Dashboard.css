@@ -37,6 +37,31 @@
     height: 90vh;
 }
 
+.chat {
+    display: flex;
+    flex-direction: column;
+    color: hsl(0, 0%, 18%);
+    padding: 2rem;
+}
+
+.owner {
+    background: hsl(217, 100%, 78%);
+    border-radius: 5px;
+    padding: 0.5rem;
+    margin: 0.5rem;
+    max-width: 50%;
+    align-self: flex-end;
+}
+
+.other {
+    background: hsl(0, 0%, 87%);
+    border-radius: 5px;
+    padding: 0.5rem;
+    margin: 0.5rem;
+    max-width: 50%;
+    align-self: flex-start;
+}
+
 .text-box {
     width: 100%;
     height: 8vh;

@@ -33,6 +33,8 @@ interface Circle {
 }
 
 export default function Dashboard() {
+    // Store messages
+    const [messages, setMessages] = useState<Message[]>([]);
 
     // Get circles from the server
     const [circles, setCircles] = useState<Circle[]>([]);
@@ -145,6 +147,9 @@ export default function Dashboard() {
             window.location.href = "/login";
             return;
         }
+        if (event.currentTarget.value === '') {
+            return;
+        }
         if (event.key === 'Enter') {
             console.log("Enter key pressed");
             const messagePayload: WebSocketMessage = {
@@ -157,11 +162,22 @@ export default function Dashboard() {
                     authorId: userID,
                 },
             };
+            if (!messagePayload.message) {
+                console.error("Message payload is empty");
+                return;
+            }
             console.log("Sending message:", messagePayload);
             event.currentTarget.value = '';
-            if (ws.current) {
-                ws.current.send(JSON.stringify(messagePayload));
+            if (!ws.current) {
+                console.error("WebSocket not connected");
+                return;
             }
+            ws.current.send(JSON.stringify(messagePayload));
+            setMessages([
+                ...messages,
+                messagePayload.message,
+            ]);
+            console.log("Messages:", messages);
         }
     };
 
@@ -451,8 +467,17 @@ export default function Dashboard() {
                 </div>
                 <div className="chat-placeholder">
                     {selectedCircleID !== "" && (
-                        <div>
-                            
+                        <div className="chat">
+                            {messages.map((message) => (
+                                <div key={message.createdAt} className={`message ${message.authorId === userID ? "owner" : "other"}`}>
+                                    <div className="message-content">
+                                        <p>{message.content}</p>
+                                    </div>
+                                    <div className="message-author">
+                                        <p>{message.authorId}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>
