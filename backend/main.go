@@ -42,13 +42,15 @@ func main() {
 	defer postgres.ClosePSQL()
 
 	hub := websockets.NewHub()
+	
+	ctx, cancel := context.WithCancel(context.Background())
+	var wg sync.WaitGroup
+	kafka.InitKafka(ctx, &wg, hub)
+
 	go hub.Run() 
 	fmt.Println("Websocket server started", hub)
 
 	// Kafka setup
-	ctx, cancel := context.WithCancel(context.Background())
-	var wg sync.WaitGroup
-	kafka.InitKafka(ctx, &wg, hub) // Start Kafka producer & consumer
 
 
 	// client, ctx := kafka.KafkaClient()

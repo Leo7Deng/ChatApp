@@ -79,7 +79,7 @@ func WebsocketConsumer(ctx context.Context, hub *websockets.Hub) {
 				Message: &message,
 				Circle: nil,
 			}
-			hub.Broadcast(websocketMessage)
+			hub.SendWebsocketMessage(websocketMessage)
 
 		case <-ctx.Done():
 			fmt.Println("Consumer shutting down...")

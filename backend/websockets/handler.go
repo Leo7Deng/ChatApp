@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"github.com/Leo7Deng/ChatApp/middleware"
+	"github.com/gorilla/websocket"
 )
 
 const (
@@ -78,7 +78,7 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.hub.broadcast <- message
+		c.hub.Broadcast <- message
 	}
 }
 

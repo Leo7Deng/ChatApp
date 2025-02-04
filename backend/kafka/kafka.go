@@ -8,8 +8,7 @@ import (
 
 // InitKafka starts the Kafka producer and consumer as goroutines
 func InitKafka(ctx context.Context, wg *sync.WaitGroup, hub *websockets.Hub) {
-	// wg.Add(3)
-	wg.Add(2)
+	wg.Add(3)
 
 	go func() {
 		defer wg.Done()
@@ -21,8 +20,8 @@ func InitKafka(ctx context.Context, wg *sync.WaitGroup, hub *websockets.Hub) {
 		WebsocketConsumer(ctx, hub) // Websocket consumer
 	}()
 
-	// go func() {
-	// 	defer wg.Done()
-	// 	StartProducer(ctx)
-	// }()
+	go func() {
+		defer wg.Done()
+		WebsocketProducer(ctx, hub)
+	}()
 }

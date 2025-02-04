@@ -20,10 +20,10 @@ interface WebSocketMessage {
 }
 
 interface Message {
-    circleId: string;
+    circle_id: string;
     content: string;
-    createdAt: string;
-    authorId: string;
+    created_at: string;
+    author_id: string;
 }
 
 interface Circle {
@@ -156,10 +156,10 @@ export default function Dashboard() {
                 type: "message",
                 action: "create",
                 message: {
-                    circleId: selectedCircleID,
+                    circle_id: selectedCircleID,
                     content: event.currentTarget.value,
-                    createdAt: new Date().toISOString(),
-                    authorId: userID,
+                    created_at: new Date().toISOString(),
+                    author_id: String(userID),
                 },
             };
             if (!messagePayload.message) {
@@ -469,12 +469,12 @@ export default function Dashboard() {
                     {selectedCircleID !== "" && (
                         <div className="chat">
                             {messages.map((message) => (
-                                <div key={message.createdAt} className={`message ${message.authorId === userID ? "owner" : "other"}`}>
+                                <div key={message.created_at} className={`message ${message.author_id === String(userID) ? "owner" : "other"}`}>
                                     <div className="message-content">
                                         <p>{message.content}</p>
                                     </div>
                                     <div className="message-author">
-                                        <p>{message.authorId}</p>
+                                        <p>{message.author_id}</p>
                                     </div>
                                 </div>
                             ))}

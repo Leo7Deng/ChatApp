@@ -93,7 +93,7 @@ func CreateCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 		Message: nil,
 		Circle: &circle,
 	}
-	hub.Broadcast(websocketMessage)
+	hub.SendWebsocketMessage(websocketMessage)
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Circle created")
@@ -163,7 +163,7 @@ func DeleteCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 		Message: nil,
 		Circle: &models.Circle{ID: circleID},
 	}
-	hub.Broadcast(websocketMessage)
+	hub.SendWebsocketMessage(websocketMessage)
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Circle deleted\n")

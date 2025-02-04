@@ -16,7 +16,7 @@ type Hub struct {
 	clients map[*Client]bool
 
 	// Inbound messages from the clients.
-	broadcast chan []byte
+	Broadcast chan []byte
 
 	// Register requests from the clients.
 	register chan *Client
@@ -33,7 +33,7 @@ type Hub struct {
 
 func NewHub() *Hub {
 	return &Hub{
-		broadcast:   make(chan []byte),
+		Broadcast:   make(chan []byte),
 		register:    make(chan *Client),
 		unregister:  make(chan *Client),
 		clients:     make(map[*Client]bool),
@@ -83,18 +83,36 @@ func (h *Hub) Run() {
 					}
 				}
 			}
-		case message := <-h.broadcast:
-			log.Printf("Client sent over websocket: %s\n", message)
-			var msg models.WebsocketMessage
-			err := json.Unmarshal(message, &msg)
-			if err != nil {
-				log.Printf("Failed to unmarshal message: %v\n", err)
-			}
+		// Moved to kafka producer
+		// case message := <-h.broadcast:
+			// var msg models.WebsocketMessage
+			// msg.Message = &models.Message{}
+			// msg.Circle = &models.Circle{}
+			// log.Printf("Client sent over websocket: %s\n", message)
+			// err := json.Unmarshal(message, &msg)
+			// if err != nil {
+			// 	log.Println("Error decoding JSON:", err)
+			// 	break
+			// }
+			// switch msg.Type {
+			// case "message":
+			// 	if msg.Message != nil {
+			// 		log.Printf("New Message: %s from %s\n", msg.Message.Content, msg.Message.AuthorID)
+			// 		// sendToKafka(msg)
+			// 	}
+			// case "circle":
+			// 	if msg.Circle != nil {
+			// 		log.Printf("Circle %s %s\n", msg.Action, msg.Circle.Name)
+			// 	}
+			// default:
+			// 	log.Println("Unknown message type:", msg.Type)
+			// }
+
 		}
 	}
 }
 
-func (h *Hub) Broadcast(message models.WebsocketMessage) {
+func (h *Hub) SendWebsocketMessage(message models.WebsocketMessage) {
 	msg, err := json.Marshal(message)
 	if err != nil {
 		log.Printf("Failed to marshal message: %v\n", err)
