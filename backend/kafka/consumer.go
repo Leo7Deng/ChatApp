@@ -67,20 +67,13 @@ func WebsocketConsumer(ctx context.Context, hub *websockets.Hub) {
 	for {
 		select {
 		case msg := <-partitionConsumer.Messages():
-			fmt.Printf("Kafka message: %s\n", string(msg.Value))
-			var message models.Message
-			err := json.Unmarshal(msg.Value, &message)
+			var websocketMessage models.WebsocketMessage
+			fmt.Printf("Kafka consumer viewed: %s\n", string(msg.Value))
+			err := json.Unmarshal(msg.Value, &websocketMessage)
 			if err != nil {
 				fmt.Printf("Failed to unmarshal message: %v\n", err)
 			}
-			websocketMessage := models.WebsocketMessage{
-				Type: "message",
-				Action: "create",
-				Message: &message,
-				Circle: nil,
-			}
 			hub.SendWebsocketMessage(websocketMessage)
-
 		case <-ctx.Done():
 			fmt.Println("Consumer shutting down...")
 			return

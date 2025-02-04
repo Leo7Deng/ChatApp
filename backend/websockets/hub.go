@@ -125,9 +125,11 @@ func (h *Hub) SendWebsocketMessage(message models.WebsocketMessage) {
 			}
 		}
 	} else if message.Type == "message" {
+		log.Printf("Message: %s\n", message.Message.Content)
 		for userID := range h.circleUsers[message.Message.CircleID] {
 			for client := range h.userClients[userID] {
 				client.send <- msg
+				log.Printf("Message " + message.Message.Content + " sent to user " + userID)
 			}
 		}
 	} else {
