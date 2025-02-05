@@ -31,10 +31,13 @@
     background: white;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .chat-placeholder {
-    height: 90vh;
+    flex: 1;
+    overflow: scroll;
+    padding-bottom: 8vh;
 }
 
 .chat {
@@ -90,13 +93,12 @@
 }
 
 .chat-title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     color: hsl(0, 0%, 18%);
     border-bottom: 1px solid hsl(0, 0%, 87%);
-    margin-bottom: 0.3rem;
-    padding: 0.57rem;
+    padding: 0.7rem;
+    padding-left: 1rem;
     display: flex;
-
 }
 
 .chat-menu {

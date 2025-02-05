@@ -41,6 +41,15 @@ export default function Dashboard() {
     const [messages, setMessages] = useState<Message[]>([]);
     const lastSentMessageTime = useRef("");
 
+    // Scroll when messages are updated
+    useEffect(() => {
+        const chatContainer = document.querySelector(".chat-placeholder") as HTMLElement;
+        if (chatContainer) {
+            const textBoxHeight = window.innerHeight * 0.94;
+            chatContainer.scrollTop = chatContainer.scrollHeight - textBoxHeight;
+        }
+    }, [messages]);
+
     // Get circles from the server
     const [circles, setCircles] = useState<Circle[]>([]);
     useEffect(() => {
@@ -185,7 +194,7 @@ export default function Dashboard() {
             ws.current.send(JSON.stringify(messagePayload));
             setMessages([
                 ...messages,
-                messagePayload.message,
+                message,
             ]);
             console.log("Messages:", messages);
         }
@@ -251,7 +260,6 @@ export default function Dashboard() {
     }, []);
 
     const [selectedCircleID, setSelectedCircleID] = useState("");
-    const [selectedButtonID, setSelectedButtonID] = useState(0);
 
     return (
         <>
@@ -261,7 +269,6 @@ export default function Dashboard() {
                         <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
                         <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
                     </svg>
-                    <span className="sr-only">Loading...</span>
                 </div>
                 :
                 <div className="dashboard">
@@ -300,10 +307,7 @@ export default function Dashboard() {
                                             </svg>
 
                                             <span
-                                                id="1"
-                                                onClick={() => setSelectedButtonID(1)}
-                                                className={`invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible' ${selectedButtonID === 1 ? "bg-blue-50 text-blue-700 opacity-100" : ""
-                                                    }`}
+                                                className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible whitespace-nowrap"
                                             >
                                                 General
                                             </span>
@@ -430,32 +434,32 @@ export default function Dashboard() {
                         </div>
 
                         <div className="sticky inset-x-0 bottom-0 border-t bg-white p-2" style={{ borderColor: 'hsl(0, 0%, 87%)' }}>
-                            <form action="#">
-                                <button
-                                    type="submit"
-                                    className="group relative flex w-full justify-center rounded-lg px-2 py-1.5 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                            <button
+                                className="group relative flex w-full justify-center rounded-lg px-2 py-1.5 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                                onClick={() => {
+                                    window.location.href = "/login";
+                                }}
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="size-5 opacity-75"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
                                 >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="size-5 opacity-75"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                                        />
-                                    </svg>
-                                    <span
-                                        className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
-                                    >
-                                        Logout
-                                    </span>
-                                </button>
-                            </form>
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                    />
+                                </svg>
+                                <span
+                                    className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
+                                >
+                                    Logout
+                                </span>
+                            </button>
                         </div>
                         {openModal && <div className="modal-container" onClick={handleClose}>
                             <div className="modal inset-0 bg-black bg-opacity-50 z-50">
@@ -471,40 +475,56 @@ export default function Dashboard() {
                     <div className="chat-container">
                         <div className="chat-title">
                             <h1>{circles.find((circle) => circle.id === selectedCircleID)?.name}&nbsp;</h1>
-                            {selectedCircleID !== "" &&
-                                <div className="chat-menu">
-                                    <button className="group relative rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 h-full" onClick={handleOpenInviteModal}>
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="size-5 opacity-75"
-                                            fill="currentColor"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                            strokeWidth="1"
-                                        >
-                                            <g transform="matrix(0.71 0 0 0.71 12 12)" >
-                                                <path
-                                                    transform=" translate(-16, -16)"
-                                                    d="M 12 2 C 8.144531 2 5 5.144531 5 9 C 5 11.410156 6.230469 13.550781 8.09375 14.8125 C 4.527344 16.34375 2 19.882813 2 24 L 4 24 C 4 19.570313 7.570313 16 12 16 C 13.375 16 14.65625 16.359375 15.78125 16.96875 C 14.671875 18.34375 14 20.101563 14 22 C 14 26.40625 17.59375 30 22 30 C 26.40625 30 30 26.40625 30 22 C 30 17.59375 26.40625 14 22 14 C 20.253906 14 18.628906 14.574219 17.3125 15.53125 C 16.871094 15.253906 16.390625 15.019531 15.90625 14.8125 C 17.769531 13.550781 19 11.410156 19 9 C 19 5.144531 15.855469 2 12 2 Z M 12 4 C 14.773438 4 17 6.226563 17 9 C 17 11.773438 14.773438 14 12 14 C 9.226563 14 7 11.773438 7 9 C 7 6.226563 9.226563 4 12 4 Z M 22 16 C 25.324219 16 28 18.675781 28 22 C 28 25.324219 25.324219 28 22 28 C 18.675781 28 16 25.324219 16 22 C 16 18.675781 18.675781 16 22 16 Z M 21 18 L 21 21 L 18 21 L 18 23 L 21 23 L 21 26 L 23 26 L 23 23 L 26 23 L 26 21 L 23 21 L 23 18 Z"
-                                                    strokeLinecap="round" />
-                                            </g>
-                                        </svg>
-                                    </button>
-                                    <button className="group relative rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 h-full" onClick={handleDelete}>
+                            <div className="chat-menu">
+                                <button
+                                    className="group relative rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 h-full disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={selectedCircleID !== "" ? handleOpenInviteModal : undefined}
+                                    disabled={selectedCircleID === ""}
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="size-5 opacity-75"
+                                        fill="currentColor"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        strokeWidth="1"
+                                    >
+                                        <g transform="matrix(0.71 0 0 0.71 12 12)" >
+                                            <path
+                                                transform=" translate(-16, -16)"
+                                                d="M 12 2 C 8.144531 2 5 5.144531 5 9 C 5 11.410156 6.230469 13.550781 8.09375 14.8125 C 4.527344 16.34375 2 19.882813 2 24 L 4 24 C 4 19.570313 7.570313 16 12 16 C 13.375 16 14.65625 16.359375 15.78125 16.96875 C 14.671875 18.34375 14 20.101563 14 22 C 14 26.40625 17.59375 30 22 30 C 26.40625 30 30 26.40625 30 22 C 30 17.59375 26.40625 14 22 14 C 20.253906 14 18.628906 14.574219 17.3125 15.53125 C 16.871094 15.253906 16.390625 15.019531 15.90625 14.8125 C 17.769531 13.550781 19 11.410156 19 9 C 19 5.144531 15.855469 2 12 2 Z M 12 4 C 14.773438 4 17 6.226563 17 9 C 17 11.773438 14.773438 14 12 14 C 9.226563 14 7 11.773438 7 9 C 7 6.226563 9.226563 4 12 4 Z M 22 16 C 25.324219 16 28 18.675781 28 22 C 28 25.324219 25.324219 28 22 28 C 18.675781 28 16 25.324219 16 22 C 16 18.675781 18.675781 16 22 16 Z M 21 18 L 21 21 L 18 21 L 18 23 L 21 23 L 21 26 L 23 26 L 23 23 L 26 23 L 26 21 L 23 21 L 23 18 Z"
+                                                strokeLinecap="round" />
+                                        </g>
+                                    </svg>
+                                    <span
+                                        className="invisible absolute start-1/2 top-full mt-4 -translate-x-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
+                                    >
+                                        Invite Users
+                                    </span>
+                                </button>
+                                <button
+                                    className="group relative rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 h-full disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={selectedCircleID !== "" ? handleDelete : undefined}
+                                    disabled={selectedCircleID === ""}
+                                >
 
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="size-5 opacity-75"
-                                            fill="currentColor"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                            strokeWidth="0.1"
-                                        >
-                                            <path d="M 10 2 L 9 3 L 4 3 L 4 5 L 5 5 L 5 20 C 5 20.522222 5.1913289 21.05461 5.5683594 21.431641 C 5.9453899 21.808671 6.4777778 22 7 22 L 17 22 C 17.522222 22 18.05461 21.808671 18.431641 21.431641 C 18.808671 21.05461 19 20.522222 19 20 L 19 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 7 5 L 17 5 L 17 20 L 7 20 L 7 5 z M 9 7 L 9 18 L 11 18 L 11 7 L 9 7 z M 13 7 L 13 18 L 15 18 L 15 7 L 13 7 z"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            }
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="size-5 opacity-75"
+                                        fill="currentColor"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        strokeWidth="0.1"
+                                    >
+                                        <path d="M 10 2 L 9 3 L 4 3 L 4 5 L 5 5 L 5 20 C 5 20.522222 5.1913289 21.05461 5.5683594 21.431641 C 5.9453899 21.808671 6.4777778 22 7 22 L 17 22 C 17.522222 22 18.05461 21.808671 18.431641 21.431641 C 18.808671 21.05461 19 20.522222 19 20 L 19 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 7 5 L 17 5 L 17 20 L 7 20 L 7 5 z M 9 7 L 9 18 L 11 18 L 11 7 L 9 7 z M 13 7 L 13 18 L 15 18 L 15 7 L 13 7 z"></path>
+                                    </svg>
+                                    <span
+                                        className="invisible absolute start-1/2 top-full mt-4 -translate-x-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
+                                    >
+                                        Delete Circle
+                                    </span>
+                                </button>
+                            </div>
                         </div>
                         <div className="chat-placeholder">
                             {selectedCircleID !== "" && (
@@ -514,16 +534,13 @@ export default function Dashboard() {
                                             <div className="message-content">
                                                 <p>{message.content}</p>
                                             </div>
-                                            <div className="message-author">
-                                                <p>{message.author_id}</p>
-                                            </div>
                                         </div>
                                     ))}
                                 </div>
                             )}
                         </div>
                         <div className="text-box">
-                            <input type="text" className="text-input" placeholder="Type a message" onKeyDown={handleEnter} />
+                            <input type="text" className={`text-input disabled:opacity-50 ${selectedCircleID === "" ? "hover:cursor-not-allowed" : ""}`} placeholder="Type a message" onKeyDown={handleEnter} disabled={selectedCircleID === ""} />
                         </div>
                     </div>
                     <div className="analytics-container">
