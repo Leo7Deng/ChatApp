@@ -109,6 +109,14 @@ func main() {
 			websockets.ServeWs(hub),
 		),
 	))
+
+	mux.HandleFunc("/api/user", middleware.AddCorsHeaders(
+		middleware.AuthMiddleware(
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				circles.GetUserHandler(w, r)
+			}),
+		),
+	))
 	
 	go func() {
 		log.Println("Starting HTTPS server on https://127.0.0.1:8000")

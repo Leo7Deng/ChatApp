@@ -38,6 +38,26 @@ func GetCirclesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(circles)
 }
 
+func GetUserHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middleware.UserIDKey).(string)
+	username, err := postgres.GetUsername(userID)
+	if err != nil {
+		fmt.Printf("Failed to get username\n")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("Failed to get username\n")
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	response := struct {
+		UserID   string `json:"user_id"`
+		Username string `json:"username"`
+	}{
+		UserID:   userID,
+		Username: username,
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
 func GetInviteUsersHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(middleware.UserIDKey).(string)
 	type Circle struct {

@@ -4,7 +4,6 @@ import "./Dashboard.css"
 import React, { useEffect, useRef, useState } from "react";
 import CreateCircleModal from "./CreateCircleModal";
 import InviteModal from "./InviteModal";
-import Cookies from 'js-cookie';
 
 interface Circle {
     id: string;
@@ -153,37 +152,44 @@ export default function Dashboard() {
         };
     }, []);
 
-    // Send message to WebSocket
-    function getCookie(name: string) {
-        const cookieStr = document.cookie;
-        const cookies = cookieStr.split(';').map(cookie => cookie.trim());
-        for (let cookie of cookies) {
-            // cookie format is "name=value"
-            if (cookie.startsWith(name + '=')) {
-                return decodeURIComponent(cookie.substring(name.length + 1));
-            }
+    // Request for userID and username
+    const [userID, setUserID] = useState("");
+    const [username, setUsername] = useState("");
+    useEffect(() => {
+        async function fetchUserData() {
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            fetch('https://127.0.0.1:8000/api/user', { 
+                method: 'GET',
+                headers: headers,
+                credentials: 'include'
+            })
+                .then(async (response) => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        console.log("Error in getting user data");
+                    }
+                    else {
+                        console.log("Data:", data);
+                        setUserID(data.user_id);
+                        setUsername(data.username);
+                    }
+                })
+                .catch(error => {
+                    console.log(error);
+                });
         }
-        return null;
-    }
-    const [cookieUserID, setCookieUserID] = useState<string | null>(null);
-    useEffect(() => {
-        const value = getCookie('user-id');
-        setCookieUserID(value);
+        fetchUserData();
     }, []);
 
-    const [userID, setUserID] = useState<string | undefined>(undefined);
-    useEffect(() => {
-        const value = Cookies.get('user-id');
-        setUserID(value);
-    }, []);
-
+    
+    // Send message to WebSocket
     interface HandleEnterEvent extends React.KeyboardEvent<HTMLInputElement> { }
     const handleEnter = (event: HandleEnterEvent) => {
-        console.log(userID);
-        console.log("cookie user id:", cookieUserID);
         if (!userID) {
             console.log("User ID not found");
-            // window.location.href = "./login";
+            window.location.href = "./login";
             return;
         }
         if (event.currentTarget.value === '') {

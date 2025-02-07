@@ -125,3 +125,25 @@ func AddUsersToCircle(circleID string, userIDs []string) error {
 
 	return nil
 }
+
+func GetUsername(userID string) (string, error) {
+	ctx := context.Background()
+	conn, err := pool.Acquire(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Release()
+
+	var username string
+	err = conn.QueryRow(
+		ctx,
+		"SELECT username FROM users WHERE id = $1",
+		userID,
+	).Scan(&username)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to get username: %v\n", err)
+		return "", err
+	}
+	return username, nil
+}

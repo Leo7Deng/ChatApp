@@ -48,8 +48,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		SetAccessTokenCookie(w, accessToken)
 
-		SetUserCookie(w, userID, account.Username)
-
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode("Account created")
 	}
@@ -84,8 +82,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		SetAccessTokenCookie(w, accessToken)
 
-		SetUserCookie(w, userID, user.Username)
-
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode("Logged in\n")
 	}
@@ -112,25 +108,6 @@ func SetAccessTokenCookie(w http.ResponseWriter, token string) {
 		Secure:   true,
 		HttpOnly: true,
 		MaxAge:   15 * 60, // 15 minutes
-		SameSite: http.SameSiteNoneMode,
-	})
-}
-
-func SetUserCookie(w http.ResponseWriter, userID string, username string) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     "user-id",
-		Value:    userID,
-		Path:    "/",
-		Secure:   true,
-		MaxAge:  1 * 24 * 60 * 60, // 1 day
-		SameSite: http.SameSiteNoneMode,
-	})
-	http.SetCookie(w, &http.Cookie{
-		Name:     "username",
-		Value:    username,
-		Path:   "/",
-		Secure:   true,
-		MaxAge:  1 * 24 * 60 * 60, // 1 day
 		SameSite: http.SameSiteNoneMode,
 	})
 }
