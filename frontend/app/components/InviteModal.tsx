@@ -23,7 +23,7 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
             const body = {
                 circle_id: circleId,
             };
-            fetch('http://localhost:8000/api/circles/invite', {
+            fetch('https://127.0.0.1:8000/api/circles/invite', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(body),
@@ -73,7 +73,7 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
             users: invitedUsers,
         };
         console.log(body);
-        fetch('http://localhost:8000/api/circles/invite/add', {
+        fetch('https://127.0.0.1:8000/api/circles/invite/add', {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(body),

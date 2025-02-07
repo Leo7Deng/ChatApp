@@ -110,9 +110,9 @@ func main() {
 		),
 	))
 	
-	
 	go func() {
-		log.Fatal(srv.ListenAndServe())
+		log.Println("Starting HTTPS server on https://127.0.0.1:8000")
+		log.Fatal(srv.ListenAndServeTLS("full-cert.crt", "private-key.key"))
 	}()
 
 	wg.Wait()

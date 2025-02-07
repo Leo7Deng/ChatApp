@@ -57,7 +57,7 @@ export default function Dashboard() {
             const headers = {
                 'Content-Type': 'application/json',
             };
-            fetch('http://localhost:8000/api/circles', {
+            fetch('https://127.0.0.1:8000/api/circles', {
                 method: 'GET',
                 headers: headers,
                 credentials: 'include'
@@ -118,7 +118,7 @@ export default function Dashboard() {
         const headers = {
             'Content-Type': 'application/json',
         };
-        fetch(`http://localhost:8000/api/circles/delete/${selectedCircleID}`, {
+        fetch(`https://127.0.0.1:8000/api/circles/delete/${selectedCircleID}`, {
             method: 'DELETE',
             headers: headers,
             credentials: 'include',
@@ -176,6 +176,7 @@ export default function Dashboard() {
         const value = Cookies.get('user-id');
         setUserID(value);
     }, []);
+
     interface HandleEnterEvent extends React.KeyboardEvent<HTMLInputElement> { }
     const handleEnter = (event: HandleEnterEvent) => {
         console.log(userID);

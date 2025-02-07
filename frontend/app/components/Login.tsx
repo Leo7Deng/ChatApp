@@ -18,7 +18,7 @@ export default function Login() {
         if (validator.isEmail(loginData.email) &&
             loginData.password !== ""
         ) {
-            fetch('http://localhost:8000/api/login', {
+            fetch('https://127.0.0.1:8000/api/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

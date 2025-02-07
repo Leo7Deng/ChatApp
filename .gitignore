@@ -34,3 +34,6 @@ backend/.env
 notes.md
 
 /frontend/out/
+
+full-cert.crt 
+private-key.key

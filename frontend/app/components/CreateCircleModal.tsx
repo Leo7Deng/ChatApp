@@ -15,7 +15,7 @@ function CreateCircleModal({ isOpen, setOpen }: CreateCircleModalProps) {
         const data: CircleData = {
             name: circleName
         };
-        fetch('http://localhost:8000/api/circles', {
+        fetch('https://127.0.0.1:8000/api/circles', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
