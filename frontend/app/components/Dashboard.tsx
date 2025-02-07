@@ -143,7 +143,7 @@ export default function Dashboard() {
     // Connect to WebSocket
     const ws = useRef<WebSocket>();
     useEffect(() => {
-        ws.current = new WebSocket("ws://localhost:8000/ws");
+        ws.current = new WebSocket("ws://127.0.0.1:8000/ws");
         ws.current.onopen = () => console.log("ws opened");
         ws.current.onclose = () => console.log("ws closed");
         const wsCurrent = ws.current;
