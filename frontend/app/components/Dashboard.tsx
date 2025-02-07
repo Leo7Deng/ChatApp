@@ -4,7 +4,7 @@ import "./Dashboard.css"
 import React, { useEffect, useRef, useState } from "react";
 import CreateCircleModal from "./CreateCircleModal";
 import InviteModal from "./InviteModal";
-import { useCookies } from "react-cookie";
+import Cookies from 'js-cookie';
 
 interface Circle {
     id: string;
@@ -66,7 +66,7 @@ export default function Dashboard() {
                     const data = await response.json();
                     if (!response.ok) {
                         if (data == "refresh token not found") {
-                            window.location.href = "/login";
+                            // window.location.href = "./login";
                         }
                         console.log("Error in getting circles");
                     }
@@ -154,12 +154,35 @@ export default function Dashboard() {
     }, []);
 
     // Send message to WebSocket
-    const [cookies] = useCookies(['user-id']);
-    const userID = cookies['user-id'];
+    function getCookie(name: string) {
+        const cookieStr = document.cookie;
+        const cookies = cookieStr.split(';').map(cookie => cookie.trim());
+        for (let cookie of cookies) {
+            // cookie format is "name=value"
+            if (cookie.startsWith(name + '=')) {
+                return decodeURIComponent(cookie.substring(name.length + 1));
+            }
+        }
+        return null;
+    }
+    const [cookieUserID, setCookieUserID] = useState<string | null>(null);
+    useEffect(() => {
+        const value = getCookie('user-id');
+        setCookieUserID(value);
+    }, []);
+
+    const [userID, setUserID] = useState<string | undefined>(undefined);
+    useEffect(() => {
+        const value = Cookies.get('user-id');
+        setUserID(value);
+    }, []);
     interface HandleEnterEvent extends React.KeyboardEvent<HTMLInputElement> { }
     const handleEnter = (event: HandleEnterEvent) => {
+        console.log(userID);
+        console.log("cookie user id:", cookieUserID);
         if (!userID) {
-            window.location.href = "/login";
+            console.log("User ID not found");
+            // window.location.href = "./login";
             return;
         }
         if (event.currentTarget.value === '') {
@@ -437,7 +460,7 @@ export default function Dashboard() {
                             <button
                                 className="group relative flex w-full justify-center rounded-lg px-2 py-1.5 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
                                 onClick={() => {
-                                    window.location.href = "/login";
+                                    window.location.href = "./login";
                                 }}
                             >
                                 <svg

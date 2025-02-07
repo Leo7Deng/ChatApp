@@ -99,6 +99,7 @@ func SetRefreshTokenCookie(w http.ResponseWriter, token string) {
 		Secure:   true,
 		HttpOnly: true,
 		MaxAge:   1 * 24 * 60 * 60, // 1 day
+		SameSite: http.SameSiteNoneMode,
 	})
 }
 
@@ -111,6 +112,7 @@ func SetAccessTokenCookie(w http.ResponseWriter, token string) {
 		Secure:   true,
 		HttpOnly: true,
 		MaxAge:   15 * 60, // 15 minutes
+		SameSite: http.SameSiteNoneMode,
 	})
 }
 
@@ -121,6 +123,7 @@ func SetUserCookie(w http.ResponseWriter, userID string, username string) {
 		Path:    "/",
 		Secure:   true,
 		MaxAge:  1 * 24 * 60 * 60, // 1 day
+		SameSite: http.SameSiteNoneMode,
 	})
 	http.SetCookie(w, &http.Cookie{
 		Name:     "username",
@@ -128,5 +131,6 @@ func SetUserCookie(w http.ResponseWriter, userID string, username string) {
 		Path:   "/",
 		Secure:   true,
 		MaxAge:  1 * 24 * 60 * 60, // 1 day
+		SameSite: http.SameSiteNoneMode,
 	})
 }
