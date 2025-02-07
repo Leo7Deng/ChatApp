@@ -1,6 +1,6 @@
 "use client"
 
-import "./Login.css"
+import "./Login.css"; 
 import React, { useState } from "react";
 import validator from "validator";
 
@@ -30,7 +30,7 @@ export default function Login() {
                 .then(data => {
                     console.log(data);
                     setLoginError(false);
-                    window.location.href = '/dashboard';
+                    window.location.href = './dashboard';
                 })
                 .catch (error => {
                     console.log(error);
@@ -46,7 +46,7 @@ return (
                 <div className="left-panel"></div>
 
                 <div className="hidden lg:relative lg:block lg:p-12">
-                    <a className="block text-white" href="#">
+                    <a className="block text-white">
                         <span className="sr-only">Home</span>
                         <svg
                             className="h-8 sm:h-10"
@@ -78,7 +78,6 @@ return (
                     <div className="relative -mt-16 block lg:hidden">
                         <a
                             className="inline-flex size-16 items-center justify-center rounded-full bg-white text-blue-600 sm:size-20"
-                            href="#"
                         >
                             <span className="sr-only">Home</span>
                             <svg
@@ -142,7 +141,7 @@ return (
 
                             <p className="mt-4 text-sm text-gray-500 sm:mt-0">
                                 Need an account?&nbsp;
-                                <a href="/register" className="text-gray-700 underline">Register</a>.
+                                <a href="./register" className="text-gray-700 underline">Register</a>.
                             </p>
                         </div>
                     </form>

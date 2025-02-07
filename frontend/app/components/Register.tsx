@@ -65,7 +65,7 @@ export default function Register() {
                         setDuplicateEmail(false);
                         setValidUsername(true);
                         console.log(data);
-                        window.location.href = "/dashboard";
+                        window.location.href = "./dashboard";
                     }
                 })
                 .catch((error) => {
@@ -81,7 +81,7 @@ export default function Register() {
                     <div className="left-panel"></div>
 
                     <div className="hidden lg:relative lg:block lg:p-12">
-                        <a className="block text-white" href="#">
+                        <a className="block text-white">
                             <span className="sr-only">Home</span>
                             <svg
                                 className="h-8 sm:h-10"
@@ -113,7 +113,6 @@ export default function Register() {
                         <div className="relative -mt-16 block lg:hidden">
                             <a
                                 className="inline-flex size-16 items-center justify-center rounded-full bg-white text-blue-600 sm:size-20"
-                                href="#"
                             >
                                 <span className="sr-only">Home</span>
                                 <svg
@@ -234,9 +233,9 @@ export default function Register() {
                             <div className="col-span-6">
                                 <p className="text-sm text-gray-500">
                                     By creating an account, you agree to our&nbsp;
-                                    <a href="#" className="text-gray-700 underline">terms and conditions</a>
+                                    <a className="text-gray-700 underline">terms and conditions</a>
                                     &nbsp;and&nbsp;
-                                    <a href="#" className="text-gray-700 underline">privacy policy</a>.
+                                    <a className="text-gray-700 underline">privacy policy</a>.
                                 </p>
                             </div>
 
@@ -250,7 +249,7 @@ export default function Register() {
 
                                 <p className="mt-4 text-sm text-gray-500 sm:mt-0">
                                     Already have an account?&nbsp;
-                                    <a href="/login" className="text-gray-700 underline">Log in</a>.
+                                    <a href="./login" className="text-gray-700 underline">Log in</a>.
                                 </p>
                             </div>
                         </form>
