@@ -65,7 +65,7 @@ export default function Dashboard() {
                     const data = await response.json();
                     if (!response.ok) {
                         if (data == "refresh token not found") {
-                            // window.location.href = "./login";
+                            window.location.href = "./login";
                         }
                         console.log("Error in getting circles");
                     }
@@ -143,7 +143,7 @@ export default function Dashboard() {
     // Connect to WebSocket
     const ws = useRef<WebSocket>();
     useEffect(() => {
-        ws.current = new WebSocket("ws://127.0.0.1:8000/ws");
+        ws.current = new WebSocket("wss://127.0.0.1:8000/ws");
         ws.current.onopen = () => console.log("ws opened");
         ws.current.onclose = () => console.log("ws closed");
         const wsCurrent = ws.current;
