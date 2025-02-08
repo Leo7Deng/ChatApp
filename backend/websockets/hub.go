@@ -83,31 +83,6 @@ func (h *Hub) Run() {
 					}
 				}
 			}
-		// Moved to kafka producer
-		// case message := <-h.broadcast:
-			// var msg models.WebsocketMessage
-			// msg.Message = &models.Message{}
-			// msg.Circle = &models.Circle{}
-			// log.Printf("Client sent over websocket: %s\n", message)
-			// err := json.Unmarshal(message, &msg)
-			// if err != nil {
-			// 	log.Println("Error decoding JSON:", err)
-			// 	break
-			// }
-			// switch msg.Type {
-			// case "message":
-			// 	if msg.Message != nil {
-			// 		log.Printf("New Message: %s from %s\n", msg.Message.Content, msg.Message.AuthorID)
-			// 		// sendToKafka(msg)
-			// 	}
-			// case "circle":
-			// 	if msg.Circle != nil {
-			// 		log.Printf("Circle %s %s\n", msg.Action, msg.Circle.Name)
-			// 	}
-			// default:
-			// 	log.Println("Unknown message type:", msg.Type)
-			// }
-
 		}
 	}
 }

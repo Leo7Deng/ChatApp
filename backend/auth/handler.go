@@ -6,6 +6,7 @@ import (
 	"github.com/Leo7Deng/ChatApp/models"
 	"github.com/Leo7Deng/ChatApp/postgres"
 	"net/http"
+	"github.com/Leo7Deng/ChatApp/redis"
 )
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
@@ -46,10 +47,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Printf("Failed to create access token\n")
 		}
-		SetAccessTokenCookie(w, accessToken)
+		AccessTokenResponse := models.AccessTokenResponse{AccessToken: accessToken}
 
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode("Account created")
+		json.NewEncoder(w).Encode(AccessTokenResponse)
 	}
 }
 
@@ -80,10 +81,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Printf("Failed to create access token\n")
 		}
-		SetAccessTokenCookie(w, accessToken)
+		AccessTokenResponse := models.AccessTokenResponse{AccessToken: accessToken}
 
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode("Logged in\n")
+		json.NewEncoder(w).Encode(AccessTokenResponse)
 	}
 }
 
@@ -99,15 +100,33 @@ func SetRefreshTokenCookie(w http.ResponseWriter, token string) {
 	})
 }
 
-func SetAccessTokenCookie(w http.ResponseWriter, token string) {
-	fmt.Println("Setting access token cookie", token)
-	http.SetCookie(w, &http.Cookie{
-		Name:     "access-token",
-		Value:    token,
-		Path:     "/",
-		Secure:   true,
-		HttpOnly: true,
-		MaxAge:   15 * 60, // 15 minutes
-		SameSite: http.SameSiteNoneMode,
-	})
+func RefreshAccessTokenHandler(w http.ResponseWriter, r *http.Request) {
+	cookies := r.Cookies()
+	var refreshToken string
+	for _, c := range cookies {
+		if c.Name == "refresh-token" {
+			refreshToken = c.Value
+			continue
+		}
+	}
+	if refreshToken == "" {
+		fmt.Println("Refresh token not found, user will need to login again")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode("refresh token not found")
+	}
+	userID, err := redis.FindRefreshToken(refreshToken)
+	if err != nil {
+		fmt.Println("Failed to find refresh token")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode("refresh token not found")
+	}
+	accessToken, err := CreateAccessToken(userID)
+	if err != nil {
+		fmt.Println("Failed to create access token")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("Failed to create access token")
+	}
+	AccessTokenResponse := models.AccessTokenResponse{AccessToken: accessToken}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(AccessTokenResponse)
 }

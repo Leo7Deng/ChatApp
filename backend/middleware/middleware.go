@@ -2,13 +2,10 @@ package middleware
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
-
-	"github.com/Leo7Deng/ChatApp/auth"
-	"github.com/Leo7Deng/ChatApp/redis"
+	
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -34,34 +31,11 @@ const UserIDKey contextKey = "user_id"
 
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookies := r.Cookies()
-		var accessToken string
-		var refreshToken string
-		for _, c := range cookies {
-			if c.Name == "access-token" {
-				fmt.Println("Found access-token: " + c.Value)
-				accessToken = c.Value
-				continue
-			}
-			if c.Name == "refresh-token" {
-				fmt.Println("Found refresh-token: " + c.Value)
-				refreshToken = c.Value
-				continue
-			}
-		}
-
-		// If access token not found, try to refresh
+		accessToken := r.Header.Get("Authorization")[7:]
+		
+		// If access token not found, return unauthorized
 		if accessToken == "" {
-			fmt.Println("Access token not found, will try to refresh")
-			userID, err := refreshAccessToken(w, refreshToken)
-			if err != nil {
-				w.WriteHeader(http.StatusUnauthorized)
-				json.NewEncoder(w).Encode("refresh token not found")
-				return
-			}
-			fmt.Println("Refreshed access token")
-			ctx := context.WithValue(r.Context(), UserIDKey, userID)
-			next.ServeHTTP(w, r.WithContext(ctx))
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
@@ -102,23 +76,4 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		fmt.Println("Authenticated user with ID: " + userID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-func refreshAccessToken(w http.ResponseWriter, refreshToken string) (string, error) {
-	if refreshToken == "" {
-		fmt.Println("Refresh token not found, user will need to login again")
-		return "", fmt.Errorf("refresh token not found")
-	}
-	userID, err := redis.FindRefreshToken(refreshToken)
-	if err != nil {
-		fmt.Println("Failed to find refresh token")
-		return "", fmt.Errorf("refresh token not found")
-	}
-	accessToken, err := auth.CreateAccessToken(userID)
-	if err != nil {
-		fmt.Println("Failed to create access token")
-		return "", fmt.Errorf("failed to create access token")
-	}
-	auth.SetAccessTokenCookie(w, accessToken)
-	return userID, nil
 }

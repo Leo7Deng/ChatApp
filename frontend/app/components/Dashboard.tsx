@@ -40,6 +40,30 @@ export default function Dashboard() {
     const [messages, setMessages] = useState<Message[]>([]);
     const lastSentMessageTime = useRef("");
 
+    // Store access token
+    const [accessToken, setAccessToken] = useState("");
+    const [expiryTime, setExpiryTime] = useState(0);
+
+    // Refresh access token
+    async function refreshAccessToken() {
+        if (new Date().getTime() < expiryTime) {
+            return;
+        }
+        const response = await fetch('https://127.0.0.1:8000//refresh', {
+            method: 'POST',
+            credentials: 'include',
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            console.log("Error in refreshing access token");
+        }
+        else {
+            console.log("Data:", data);
+            setAccessToken(data.access_token);
+            setExpiryTime(new Date().getTime());
+        }
+    }
+
     // Scroll when messages are updated
     useEffect(() => {
         const chatContainer = document.querySelector(".chat-placeholder") as HTMLElement;
@@ -53,8 +77,9 @@ export default function Dashboard() {
     const [circles, setCircles] = useState<Circle[]>([]);
     useEffect(() => {
         async function fetchUserData() {
+            await refreshAccessToken();
             const headers = {
-                'Content-Type': 'application/json',
+                "Authorization": `Bearer ${accessToken}`,
             };
             fetch('https://127.0.0.1:8000/api/circles', {
                 method: 'GET',
@@ -113,10 +138,11 @@ export default function Dashboard() {
     };
 
     // Delete circle
-    const handleDelete = () => {
-        const headers = {
-            'Content-Type': 'application/json',
-        };
+    const handleDelete = async () => {
+        await refreshAccessToken();
+            const headers = {
+                "Authorization": `Bearer ${accessToken}`,
+            };
         fetch(`https://127.0.0.1:8000/api/circles/delete/${selectedCircleID}`, {
             method: 'DELETE',
             headers: headers,
@@ -157,8 +183,9 @@ export default function Dashboard() {
     const [username, setUsername] = useState("");
     useEffect(() => {
         async function fetchUserData() {
+            await refreshAccessToken();
             const headers = {
-                'Content-Type': 'application/json',
+                "Authorization": `Bearer ${accessToken}`,
             };
             fetch('https://127.0.0.1:8000/api/user', { 
                 method: 'GET',

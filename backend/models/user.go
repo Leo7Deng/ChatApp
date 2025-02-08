@@ -22,3 +22,7 @@ type LoginData struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type AccessTokenResponse struct {
+	AccessToken  string `json:"access_token"`
+}
