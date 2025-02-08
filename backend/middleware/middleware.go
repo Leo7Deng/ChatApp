@@ -4,18 +4,21 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
-	
-	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/Leo7Deng/ChatApp/auth"
 )
 
 func AddCorsHeaders(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "https://leo7deng.github.io")
-		// w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		if r.Header.Get("Origin") == "http://localhost:3000" {
+			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		}
+		if r.Header.Get("Origin") == "https://chatapp.leo7deng.com" {
+			w.Header().Set("Access-Control-Allow-Origin", "https://chatapp.leo7deng.com")
+		}
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, DELETE, GET")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		// Handle preflight OPTIONS requests
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
@@ -40,33 +43,12 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		// Validate access token
-		token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-			}
-			return []byte(os.Getenv("TOKEN_SECRET_KEY")), nil
-		})
+		userID, err := auth.ValidateAccessToken(accessToken)
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-
-		if !token.Valid {
-			fmt.Println("2")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok {
-			fmt.Println("3")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
-		userID, ok := claims["user_id"].(string)
-		if !ok {
-			fmt.Println("4")
+		if userID == "" {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}

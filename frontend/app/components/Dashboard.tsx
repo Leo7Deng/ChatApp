@@ -46,10 +46,10 @@ export default function Dashboard() {
 
     // Refresh access token
     async function refreshAccessToken() {
-        if (new Date().getTime() < expiryTime) {
-            return;
+        if (new Date().getTime() < expiryTime || accessToken !== "") {
+            return accessToken;
         }
-        const response = await fetch('https://127.0.0.1:8000//refresh', {
+        const response = await fetch('https://127.0.0.1:8000/refresh', {
             method: 'POST',
             credentials: 'include',
         });
@@ -61,6 +61,7 @@ export default function Dashboard() {
             console.log("Data:", data);
             setAccessToken(data.access_token);
             setExpiryTime(new Date().getTime());
+            return data.access_token
         }
     }
 
@@ -77,14 +78,14 @@ export default function Dashboard() {
     const [circles, setCircles] = useState<Circle[]>([]);
     useEffect(() => {
         async function fetchUserData() {
-            await refreshAccessToken();
+            const token = await refreshAccessToken();
             const headers = {
-                "Authorization": `Bearer ${accessToken}`,
+                "Authorization": `Bearer ${token}`,
             };
             fetch('https://127.0.0.1:8000/api/circles', {
                 method: 'GET',
+                credentials: 'include',
                 headers: headers,
-                credentials: 'include'
             })
                 .then(async (response) => {
                     const data = await response.json();
@@ -139,9 +140,9 @@ export default function Dashboard() {
 
     // Delete circle
     const handleDelete = async () => {
-        await refreshAccessToken();
+        const token = await refreshAccessToken();
             const headers = {
-                "Authorization": `Bearer ${accessToken}`,
+                "Authorization": `Bearer ${token}`,
             };
         fetch(`https://127.0.0.1:8000/api/circles/delete/${selectedCircleID}`, {
             method: 'DELETE',
@@ -169,13 +170,17 @@ export default function Dashboard() {
     // Connect to WebSocket
     const ws = useRef<WebSocket>();
     useEffect(() => {
-        ws.current = new WebSocket("wss://127.0.0.1:8000/ws");
-        ws.current.onopen = () => console.log("ws opened");
-        ws.current.onclose = () => console.log("ws closed");
-        const wsCurrent = ws.current;
-        return () => {
-            wsCurrent.close();
+        const connectWebSocket = async () => {
+            const token = await refreshAccessToken();
+            ws.current = new WebSocket("wss://127.0.0.1:8000/ws", [token]);
+            ws.current.onopen = () => console.log("ws opened");
+            ws.current.onclose = () => console.log("ws closed");
+            const wsCurrent = ws.current;
+            return () => {
+                wsCurrent.close();
+            };
         };
+        connectWebSocket();
     }, []);
 
     // Request for userID and username
@@ -183,9 +188,9 @@ export default function Dashboard() {
     const [username, setUsername] = useState("");
     useEffect(() => {
         async function fetchUserData() {
-            await refreshAccessToken();
+            const token = await refreshAccessToken();
             const headers = {
-                "Authorization": `Bearer ${accessToken}`,
+                "Authorization": `Bearer ${token}`,
             };
             fetch('https://127.0.0.1:8000/api/user', { 
                 method: 'GET',
@@ -314,7 +319,7 @@ export default function Dashboard() {
                 console.error("Error parsing WebSocket message:", error);
             }
         };
-    }, []);
+    }, [ws.current]);
 
     const [selectedCircleID, setSelectedCircleID] = useState("");
 

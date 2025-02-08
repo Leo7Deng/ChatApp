@@ -119,7 +119,3 @@ func TestProducer(ctx context.Context) {
 		}
 	}
 }
-
-func ChatProducer(websocketMessage models.WebsocketMessage) {
-
-}

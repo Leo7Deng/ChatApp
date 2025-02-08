@@ -50,30 +50,6 @@ func main() {
 	go hub.Run() 
 	fmt.Println("Websocket server started", hub)
 
-	// Kafka setup
-
-
-	// client, ctx := kafka.KafkaClient()
-	// defer client.Close()
-
-	// kafka.ConsumeMessages(client, ctx)
-
-	// go func() {
-	// 	for {
-	// 		kafka.ProduceMessage(client, ctx, "foo", "Hello from the server")
-	// 		<-time.After(5 * time.Second)
-	// 	}
-	// }()
-
-	// asyncronously broadcast message every 5 seconds
-	// go func() {
-	// 	for {
-	// 		hub.Broadcast([]byte("Hello from the server"))
-	// 		fmt.Println("Broadcasting message")
-	// 		<-time.After(5 * time.Second)
-	// 	}
-	// }()
-
 	mux.HandleFunc("/api/register", middleware.AddCorsHeaders(auth.RegisterHandler))
 	mux.HandleFunc("/api/login", middleware.AddCorsHeaders(auth.LoginHandler))
 	mux.Handle("/api/circles", middleware.AddCorsHeaders(
@@ -105,9 +81,7 @@ func main() {
 		),
 	))
 	mux.HandleFunc("/ws", middleware.AddCorsHeaders(
-		middleware.AuthMiddleware(
 			websockets.ServeWs(hub),
-		),
 	))
 
 	mux.HandleFunc("/api/user", middleware.AddCorsHeaders(

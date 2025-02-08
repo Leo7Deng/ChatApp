@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Leo7Deng/ChatApp/middleware"
+	"github.com/Leo7Deng/ChatApp/auth"
 	"github.com/gorilla/websocket"
 )
 
@@ -96,6 +96,7 @@ func (c *Client) writePump() {
 	for {
 		select {
 		case message, ok := <-c.send:
+			fmt.Println("🟢 Sending message:", string(message))
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
@@ -131,12 +132,23 @@ func (c *Client) writePump() {
 // serveWs handles websocket requests from the peer.
 func ServeWs(hub *Hub) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		conn, err := upgrader.Upgrade(w, r, nil)
+		token := r.Header.Get("Sec-WebSocket-Protocol")
+		if token == "" {
+			http.Error(w, "Invalid token format", http.StatusUnauthorized)
+			return
+		}
+		fmt.Println("websocket token", token)
+		userID, err := auth.ValidateAccessToken(token)
+		fmt.Println("userID", userID)
+		if err != nil {
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+		conn, err := upgrader.Upgrade(w, r, http.Header{"Sec-WebSocket-Protocol": {token}})
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		userID := r.Context().Value(middleware.UserIDKey).(string)
 		client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), userID: userID}
 		client.hub.register <- client
 		fmt.Println("Client registered")
@@ -147,6 +159,4 @@ func ServeWs(hub *Hub) http.HandlerFunc {
 	}
 }
 
-
 // Still need to add users to memory on load of hub
-

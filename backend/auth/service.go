@@ -36,20 +36,25 @@ func CreateAccessToken(userID string) (string, error) {
 }
 
 func ValidateAccessToken(tokenString string) (string, error) {
-	secretKey := []byte(os.Getenv("TOKEN_SECRET_KEY"))
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return secretKey, nil
+		return []byte(os.Getenv("TOKEN_SECRET_KEY")), nil
 	})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("invalid token")
 	}
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userID := claims["user_id"].(string)
-		return userID, nil
-	} else {
-		return "", err
+	if !token.Valid {
+		return "", fmt.Errorf("invalid token")
 	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", fmt.Errorf("invalid token")
+	}
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return "", fmt.Errorf("invalid token")
+	}
+	return userID, nil
 }
