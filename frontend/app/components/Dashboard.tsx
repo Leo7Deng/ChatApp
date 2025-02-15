@@ -357,49 +357,14 @@ export default function Dashboard() {
                                 </span>
                             </div>
 
-                            <div className="border-t" style={{ borderColor: 'hsl(0, 0%, 87%)' }}>
+                            <div>
                                 <div className="px-2">
-                                    <div className="py-2">
-                                        <a
-                                            className="t group relative flex justify-center rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="size-5 opacity-75"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                                                />
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                                />
-                                            </svg>
-
-                                            <span
-                                                className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible whitespace-nowrap"
-                                            >
-                                                General
-                                            </span>
-                                        </a>
-                                    </div>
-
-                                    <ul className="space-y-1 border-t pt-4" style={{ borderColor: 'hsl(0, 0%, 87%)' }}>
+                                    <ul className="left-column space-y-1 border-t pt-4" style={{ borderColor: 'hsl(0, 0%, 87%)' }}>
                                         {circles.map((circle) => (
                                             <li key={circle.id} className="flex justify-center">
                                                 <button onClick={() => setSelectedCircleID(circle.id)} className="w-full">
                                                     <a
-                                                        className={`group relative flex justify-center rounded px-2 py-1.5 ${selectedCircleID === circle.id
-                                                            ? "bg-blue-100 text-gray-700"
-                                                            : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                                                            }`}
+                                                        className={`circles button-size group ${selectedCircleID === circle.id ? "selected-circle" : ""}`}
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -417,7 +382,7 @@ export default function Dashboard() {
                                                         </svg>
 
                                                         <span
-                                                            className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible whitespace-nowrap"
+                                                            className="invisible absolute start-full top-1/2 ms-5 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible whitespace-nowrap"
                                                         >
                                                             {circle.name}
                                                         </span>
@@ -425,7 +390,7 @@ export default function Dashboard() {
                                                 </button>
                                             </li>
                                         ))}
-                                        <li>
+                                        {/* <li>
                                             <a
                                                 className="group relative flex justify-center rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
                                             >
@@ -450,69 +415,65 @@ export default function Dashboard() {
                                                     Account
                                                 </span>
                                             </a>
-                                        </li>
-
-
-                                        <li className="flex justify-center">
-                                            <button
-                                                className="group relative flex justify-center rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 w-full"
-                                                onClick={createCircle}
-                                            >
-                                                <svg
-                                                    id="Layer_1"
-                                                    data-name="Layer 1"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth="2"
-                                                    opacity={0.75}
-                                                    width="24"
-                                                    height="24"
-                                                    stroke="currentColor"
-                                                    className="size-5 opacity-75"
-                                                >
-                                                    <defs>
-                                                        <style>
-                                                            {`.cls-637642e7c3a86d32eae6f177-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}`}
-                                                        </style>
-                                                    </defs>
-                                                    <path
-                                                        className="cls-637642e7c3a86d32eae6f177-1"
-                                                        d="M18.68,8.16V15.8a2.86,2.86,0,0,1-2.86,2.86H13.91v2.86L8.18,18.66H4.36A2.86,2.86,0,0,1,1.5,15.8V8.16A2.86,2.86,0,0,1,4.36,5.3H15.82A2.86,2.86,0,0,1,18.68,8.16Z"
-                                                    ></path>
-                                                    <path
-                                                        className="cls-637642e7c3a86d32eae6f177-1"
-                                                        d="M18.68,14.84h1A2.86,2.86,0,0,0,22.5,12V4.34a2.86,2.86,0,0,0-2.86-2.86H8.18A2.86,2.86,0,0,0,5.32,4.34v1"
-                                                    ></path>
-                                                    <line
-                                                        className="cls-637642e7c3a86d32eae6f177-1"
-                                                        x1="6.27"
-                                                        y1="11.98"
-                                                        x2="13.91"
-                                                        y2="11.98"
-                                                    ></line>
-                                                    <line
-                                                        className="cls-637642e7c3a86d32eae6f177-1"
-                                                        x1="10.09"
-                                                        y1="8.16"
-                                                        x2="10.09"
-                                                        y2="15.8"
-                                                    ></line>
-                                                </svg>
-                                                <span
-                                                    className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible whitespace-nowrap"
-                                                >
-                                                    Add Circle
-                                                </span>
-                                            </button>
-                                        </li>
+                                        </li> */}
                                     </ul>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="sticky inset-x-0 bottom-0 border-t bg-white p-2" style={{ borderColor: 'hsl(0, 0%, 87%)' }}>
+                        <div className="left-column sticky inset-x-0 bottom-0 border-t bg-white ml-2 mr-2 pt-3 pb-3" style={{ borderColor: 'hsl(0, 0%, 87%)' }}>
                             <button
-                                className="group relative flex w-full justify-center rounded-lg px-2 py-1.5 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                                className="button-size group"
+                                onClick={createCircle}
+                            >
+                                <svg
+                                    id="Layer_1"
+                                    data-name="Layer 1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth="2"
+                                    opacity={0.75}
+                                    width="24"
+                                    height="24"
+                                    stroke="currentColor"
+                                    className="size-5 opacity-75"
+                                >
+                                    <defs>
+                                        <style>
+                                            {`.cls-637642e7c3a86d32eae6f177-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}`}
+                                        </style>
+                                    </defs>
+                                    <path
+                                        className="cls-637642e7c3a86d32eae6f177-1"
+                                        d="M18.68,8.16V15.8a2.86,2.86,0,0,1-2.86,2.86H13.91v2.86L8.18,18.66H4.36A2.86,2.86,0,0,1,1.5,15.8V8.16A2.86,2.86,0,0,1,4.36,5.3H15.82A2.86,2.86,0,0,1,18.68,8.16Z"
+                                    ></path>
+                                    <path
+                                        className="cls-637642e7c3a86d32eae6f177-1"
+                                        d="M18.68,14.84h1A2.86,2.86,0,0,0,22.5,12V4.34a2.86,2.86,0,0,0-2.86-2.86H8.18A2.86,2.86,0,0,0,5.32,4.34v1"
+                                    ></path>
+                                    <line
+                                        className="cls-637642e7c3a86d32eae6f177-1"
+                                        x1="6.27"
+                                        y1="11.98"
+                                        x2="13.91"
+                                        y2="11.98"
+                                    ></line>
+                                    <line
+                                        className="cls-637642e7c3a86d32eae6f177-1"
+                                        x1="10.09"
+                                        y1="8.16"
+                                        x2="10.09"
+                                        y2="15.8"
+                                    ></line>
+                                </svg>
+                                <span
+                                    className="invisible absolute start-full top-1/2 ms-5 -translate-y-1/2 rounded bg-gray-900 px-1.5 py-1.5 text-xs font-medium text-white group-hover:visible whitespace-nowrap"
+                                >
+                                    Add Circle
+                                </span>
+                            </button>
+                            <button
+                                className="button-size group"
                                 onClick={() => {
                                     window.location.href = "./login";
                                 }}
@@ -532,7 +493,7 @@ export default function Dashboard() {
                                     />
                                 </svg>
                                 <span
-                                    className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
+                                    className="invisible absolute start-full top-1/2 ms-5 -translate-y-1/2 rounded bg-gray-900 px-1.5 py-1.5 text-xs font-medium text-white group-hover:visible"
                                 >
                                     Logout
                                 </span>
@@ -554,7 +515,7 @@ export default function Dashboard() {
                             <h1>{circles.find((circle) => circle.id === selectedCircleID)?.name}&nbsp;</h1>
                             <div className="chat-menu">
                                 <button
-                                    className="group relative rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 h-full disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="button-size group disabled:opacity-50 disabled:cursor-not-allowed"
                                     onClick={selectedCircleID !== "" ? handleOpenInviteModal : undefined}
                                     disabled={selectedCircleID === ""}
                                 >
@@ -574,13 +535,13 @@ export default function Dashboard() {
                                         </g>
                                     </svg>
                                     <span
-                                        className="invisible absolute start-1/2 top-full mt-4 -translate-x-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
+                                        className="invisible absolute start-1/2 top-full mt-5 -translate-x-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
                                     >
                                         Invite Users
                                     </span>
                                 </button>
                                 <button
-                                    className="group relative rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 h-full disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="button-size group disabled:opacity-50 disabled:cursor-not-allowed"
                                     onClick={selectedCircleID !== "" ? handleDelete : undefined}
                                     disabled={selectedCircleID === ""}
                                 >
@@ -596,7 +557,7 @@ export default function Dashboard() {
                                         <path d="M 10 2 L 9 3 L 4 3 L 4 5 L 5 5 L 5 20 C 5 20.522222 5.1913289 21.05461 5.5683594 21.431641 C 5.9453899 21.808671 6.4777778 22 7 22 L 17 22 C 17.522222 22 18.05461 21.808671 18.431641 21.431641 C 18.808671 21.05461 19 20.522222 19 20 L 19 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 7 5 L 17 5 L 17 20 L 7 20 L 7 5 z M 9 7 L 9 18 L 11 18 L 11 7 L 9 7 z M 13 7 L 13 18 L 15 18 L 15 7 L 13 7 z"></path>
                                     </svg>
                                     <span
-                                        className="invisible absolute start-1/2 top-full mt-4 -translate-x-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
+                                        className="invisible absolute start-1/2 top-full mt-5 -translate-x-1/2 rounded bg-gray-900 px-1.5 py-1.5 text-xs font-medium text-white group-hover:visible"
                                     >
                                         Delete Circle
                                     </span>

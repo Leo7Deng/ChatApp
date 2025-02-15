@@ -82,7 +82,7 @@
 }
 
 .sidebar {
-    width: 8vh;
+    width: 4rem;
     z-index: 10;
     border-right: 1px solid hsl(0, 0%, 87%);
 }
@@ -124,4 +124,38 @@
 .spinner {
     color: rgb(0, 0, 0);
     fill: rgb(255, 255, 255);
+}
+
+.left-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.button-size {
+    width: 2.5rem;
+    height: 2.5rem;
+    min-height: 2.5rem;
+    color: hsl(0, 0%, 40%);
+    border-radius: 0.25rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.button-size:hover {
+    background: hsl(0, 0%, 94%);
+    color: hsl(0, 0%, 15%);
+}
+
+.circles {
+    background-color: hsl(0, 0%, 97%);
+}
+
+.selected-circle {
+    background-color: hsl(221, 83%, 83%);
+    color: hsl(0, 0%, 0%);
+    pointer-events: none;
 }
