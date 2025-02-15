@@ -37,7 +37,7 @@ export default function Dashboard() {
     const [isFetching, setIsFetching] = useState(true);
 
     // Store messages
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [allMessages, setAllMessages] = useState<{ [key: string]: Message[] }>({});
     const lastSentMessageTime = useRef("");
 
     // Store access token
@@ -64,15 +64,6 @@ export default function Dashboard() {
             return data.access_token
         }
     }
-
-    // Scroll when messages are updated
-    useEffect(() => {
-        const chatContainer = document.querySelector(".chat-placeholder") as HTMLElement;
-        if (chatContainer) {
-            const textBoxHeight = window.innerHeight * 0.94;
-            chatContainer.scrollTop = chatContainer.scrollHeight - textBoxHeight;
-        }
-    }, [messages]);
 
     // Get circles from the server
     const [circles, setCircles] = useState<Circle[]>([]);
@@ -141,9 +132,9 @@ export default function Dashboard() {
     // Delete circle
     const handleDelete = async () => {
         const token = await refreshAccessToken();
-            const headers = {
-                "Authorization": `Bearer ${token}`,
-            };
+        const headers = {
+            "Authorization": `Bearer ${token}`,
+        };
         fetch(`https://127.0.0.1:8000/api/circles/delete/${selectedCircleID}`, {
             method: 'DELETE',
             headers: headers,
@@ -192,7 +183,7 @@ export default function Dashboard() {
             const headers = {
                 "Authorization": `Bearer ${token}`,
             };
-            fetch('https://127.0.0.1:8000/api/user', { 
+            fetch('https://127.0.0.1:8000/api/user', {
                 method: 'GET',
                 headers: headers,
                 credentials: 'include'
@@ -215,7 +206,7 @@ export default function Dashboard() {
         fetchUserData();
     }, []);
 
-    
+
     // Send message to WebSocket
     interface HandleEnterEvent extends React.KeyboardEvent<HTMLInputElement> { }
     const handleEnter = (event: HandleEnterEvent) => {
@@ -254,11 +245,13 @@ export default function Dashboard() {
                 return;
             }
             ws.current.send(JSON.stringify(messagePayload));
-            setMessages([
-                ...messages,
-                message,
-            ]);
-            console.log("Messages:", messages);
+            setAllMessages({
+                ...allMessages,
+                [selectedCircleID]: [
+                    ...allMessages[selectedCircleID] || [],
+                    message,
+                ],
+            });
         }
     };
 
@@ -285,13 +278,22 @@ export default function Dashboard() {
                             console.log(`Message round-trip time: ${timeDifference}ms`);
                             return;
                         }
-                        setMessages((prevMessages) => [...prevMessages, parsedData]);
+                        setAllMessages({
+                            ...allMessages,
+                            [parsedData.circle_id]: [
+                                ...allMessages[parsedData.circle_id] || [],
+                                parsedData,
+                            ],
+                        });
                     }
                     else if (parsedData.action == "delete") {
                         parsedData = parsedData.message;
                         const messageCreatedAt = parsedData.created_at;
                         console.log("Removing message with created_at:", messageCreatedAt);
-                        setMessages((prevMessages) => prevMessages.filter((message) => message.created_at !== messageCreatedAt));
+                        setAllMessages({
+                            ...allMessages,
+                            [parsedData.circle_id]: allMessages[parsedData.circle_id].filter((message) => message.created_at !== messageCreatedAt),
+                        });
                     }
                 }
                 else if (parsedData.type == "circle") {
@@ -310,6 +312,10 @@ export default function Dashboard() {
                         const circleID = parsedData.id;
                         console.log("Removing circle with ID:", circleID);
                         setCircles((prevCircles) => prevCircles.filter((circle) => circle.id !== circleID));
+                        setAllMessages({
+                            ...allMessages,
+                            [circleID]: [],
+                        });
                     }
                 }
                 else {
@@ -322,6 +328,15 @@ export default function Dashboard() {
     }, [ws.current]);
 
     const [selectedCircleID, setSelectedCircleID] = useState("");
+
+    // Scroll when messages are updated
+    useEffect(() => {
+        const chatContainer = document.querySelector(".chat-placeholder") as HTMLElement;
+        if (chatContainer) {
+            const textBoxHeight = window.innerHeight * 0.94;
+            chatContainer.scrollTop = chatContainer.scrollHeight - textBoxHeight;
+        }
+    }, [allMessages[selectedCircleID]]);
 
     return (
         <>
@@ -591,7 +606,7 @@ export default function Dashboard() {
                         <div className="chat-placeholder">
                             {selectedCircleID !== "" && (
                                 <div className="chat">
-                                    {messages.map((message) => (
+                                    {allMessages[selectedCircleID]?.map((message) => (
                                         <div key={message.created_at} className={`message ${message.author_id === String(userID) ? "owner" : "other"}`}>
                                             <div className="message-content">
                                                 <p>{message.content}</p>
