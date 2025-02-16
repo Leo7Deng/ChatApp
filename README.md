@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Introduction
 
-## Getting Started
+Chat App is a real time chat application designed for performance and scalability. 
 
-First, run the development server:
+### Motivation
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The motivation behind this project was to learn distributed system design and build a scalable architecture that can handle a large number of users and messages.
+I wanted to explore new technologies like Go, WebSockets, and Apache Kafka, and develop a real-time data pipeline that supports machine learning (ML) training.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Component         | Technology Used            |
+|------------------|--------------------------|
+| **Frontend**     | (React/Next.js, TypeScript) |
+| **Backend**      | Go    |
+| **Database**     | PostgreSQL (relational) + Redis (NoSQL) + xxx (NoSQL) |
+| **Caching**      | Redis                      |
+| **Real-Time**    | WebSockets (gorilla/websocket for Go) |    
+| **Message Queue** |Apache Kafka                |
+| **Deployment**   | Docker Compose             |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Design 
 
-## Learn More
+### Authentication
 
-To learn more about Next.js, take a look at the following resources:
+I chose to not use third-party authentication libraries. Instead, I designed a refresh token and JWT-based access token system:
+- The refresh token is securely stored in an httpOnly cookie and managed as a key in Redis for fast retrieval and easy revocation.
+- The access token is a JWT that includes the user ID as a claim. It is stored in memory and has a short lifespan for improved security.
+- Using authContext in React, I share the access token across all child components and centralize the token refresh logic.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Websockets
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+I used the gorilla/websocket library for Go to manage WebSocket connections:
+- Created a hub that manages all WebSocket connections and broadcasts messages.
+- Mapped user IDs to each WebSocket client to support direct messaging.
+- To scale horizontally, I plan to use Kafka consumers to broadcast messages across multiple WebSocket servers.
 
-## Deploy on Vercel
+### Kafka
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+I chose Apache Kafka because of its high throughput and fault-tolerant design. It also supports multiple consumers, which is ideal for adding new features in the future.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+<!-- # Difficulties
+- Designing how to handle errors in Kafka
+- Designing how to metigate eventual consistency in xxx -->
