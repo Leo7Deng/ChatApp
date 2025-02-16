@@ -4,105 +4,34 @@ import "./Dashboard.css"
 import React, { useEffect, useRef, useState } from "react";
 import CreateCircleModal from "./CreateCircleModal";
 import InviteModal from "./InviteModal";
+import { useFetchDashboard } from "../hooks/useFetchDashboard";
+import { useWebSocketDashboard } from "../hooks/useWebsocketDashboard";
+import { Circle, Message, WebSocketMessage } from "../types";
 
-interface Circle {
-    id: string;
-    name: string;
-    created_at: string;
-}
-
-interface WebSocketMessage {
-    origin: "server" | "client";
-    type: "message" | "circle";
-    action: "create" | "delete";
-    message?: Message;
-    circle?: Circle;
-}
-
-interface Message {
-    circle_id: string;
-    content: string;
-    created_at: string;
-    author_id: string;
-}
-
-interface Circle {
-    id: string;
-    name: string;
-    createdAt?: string;
-}
-
-export default function Dashboard() {
-    // Loading spinner
-    const [isFetching, setIsFetching] = useState(true);
-
-    // Store messages
+export default function Dashboard2() {
+    const [isUserDataFetched, setIsUserDataFetched] = useState(false);
+    const [selectedCircleID, setSelectedCircleID] = useState("");
     const [allMessages, setAllMessages] = useState<{ [key: string]: Message[] }>({});
-    const lastSentMessageTime = useRef("");
-
-    // Store access token
-    const [accessToken, setAccessToken] = useState("");
-    const [expiryTime, setExpiryTime] = useState(0);
-
-    // Refresh access token
-    async function refreshAccessToken() {
-        if (new Date().getTime() < expiryTime || accessToken !== "") {
-            return accessToken;
-        }
-        const response = await fetch('https://127.0.0.1:8000/refresh', {
-            method: 'POST',
-            credentials: 'include',
-        });
-        const data = await response.json();
-        if (!response.ok) {
-            console.log("Error in refreshing access token");
-        }
-        else {
-            console.log("Data:", data);
-            setAccessToken(data.access_token);
-            setExpiryTime(new Date().getTime());
-            return data.access_token
-        }
-    }
-
-    // Get circles from the server
+    
     const [circles, setCircles] = useState<Circle[]>([]);
+    const { userID, username, fetchUserData, handleDelete } = useFetchDashboard(setCircles);
+    const { sendMessage } = useWebSocketDashboard(setCircles, allMessages, setAllMessages);
+
     useEffect(() => {
-        async function fetchUserData() {
-            const token = await refreshAccessToken();
-            const headers = {
-                "Authorization": `Bearer ${token}`,
-            };
-            fetch('https://127.0.0.1:8000/api/circles', {
-                method: 'GET',
-                credentials: 'include',
-                headers: headers,
-            })
-                .then(async (response) => {
-                    const data = await response.json();
-                    if (!response.ok) {
-                        if (data == "refresh token not found") {
-                            window.location.href = "./login";
-                        }
-                        console.log("Error in getting circles");
-                    }
-                    else {
-                        console.log("Data:", data);
-                        const mappedCircles = data.map((circle: any) => ({
-                            id: circle.id,
-                            name: circle.name,
-                            created_at: circle.created_at,
-                        }));
-                        setCircles(mappedCircles);
-                        setIsFetching(false);
-                    }
-                })
-                .catch(error => {
-                    console.log(error);
-                });
-        }
-        fetchUserData();
+        const fetchData = async () => {
+            await fetchUserData();
+            setIsUserDataFetched(true);
+        };
+        fetchData();
     }, []);
+
+    useEffect(() => {
+        const chatContainer = document.querySelector(".chat-placeholder") as HTMLElement;
+        if (chatContainer) {
+            const textBoxHeight = window.innerHeight * 0.94;
+            chatContainer.scrollTop = chatContainer.scrollHeight - textBoxHeight;
+        }
+    }, [allMessages[selectedCircleID]]);
 
     // Create a new circle
     const [openModal, setOpenModal] = useState(false);
@@ -129,218 +58,38 @@ export default function Dashboard() {
         }
     };
 
-    // Delete circle
-    const handleDelete = async () => {
-        const token = await refreshAccessToken();
-        const headers = {
-            "Authorization": `Bearer ${token}`,
-        };
-        fetch(`https://127.0.0.1:8000/api/circles/delete/${selectedCircleID}`, {
-            method: 'DELETE',
-            headers: headers,
-            credentials: 'include',
-        })
-            .then(async (response) => {
-                const data = await response.json();
-                if (!response.ok) {
-                    if (data == "user is not admin of circle") {
-                        alert("You are not an admin of the circle");
-                    }
-                    console.log("data: ", data);
-                }
-                else {
-                    console.log("Data:", data);
-                    setCircles((prevCircles) => prevCircles.filter((circle) => circle.id !== selectedCircleID));
-                }
-            })
-            .catch(error => {
-                console.log(error);
-            });
-    }
-
-    // Connect to WebSocket
-    const ws = useRef<WebSocket>();
-    useEffect(() => {
-        const connectWebSocket = async () => {
-            const token = await refreshAccessToken();
-            ws.current = new WebSocket("wss://127.0.0.1:8000/ws", [token]);
-            ws.current.onopen = () => console.log("ws opened");
-            ws.current.onclose = () => console.log("ws closed");
-            const wsCurrent = ws.current;
-            return () => {
-                wsCurrent.close();
-            };
-        };
-        connectWebSocket();
-    }, []);
-
-    // Request for userID and username
-    const [userID, setUserID] = useState("");
-    const [username, setUsername] = useState("");
-    useEffect(() => {
-        async function fetchUserData() {
-            const token = await refreshAccessToken();
-            const headers = {
-                "Authorization": `Bearer ${token}`,
-            };
-            fetch('https://127.0.0.1:8000/api/user', {
-                method: 'GET',
-                headers: headers,
-                credentials: 'include'
-            })
-                .then(async (response) => {
-                    const data = await response.json();
-                    if (!response.ok) {
-                        console.log("Error in getting user data");
-                    }
-                    else {
-                        console.log("Data:", data);
-                        setUserID(data.user_id);
-                        setUsername(data.username);
-                    }
-                })
-                .catch(error => {
-                    console.log(error);
-                });
-        }
-        fetchUserData();
-    }, []);
-
-
-    // Send message to WebSocket
-    interface HandleEnterEvent extends React.KeyboardEvent<HTMLInputElement> { }
-    const handleEnter = (event: HandleEnterEvent) => {
-        if (!userID) {
-            console.log("User ID not found");
-            window.location.href = "./login";
-            return;
-        }
-        if (event.currentTarget.value === '') {
-            return;
-        }
-        if (event.key === 'Enter') {
-            console.log("Enter key pressed");
-            var currentTime = new Date().toISOString();
-            lastSentMessageTime.current = currentTime;
+    const handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter") {
+            const content = (event.target as HTMLInputElement).value;
+            if (content.trim() === "") return;
             const message: Message = {
                 circle_id: selectedCircleID,
-                content: event.currentTarget.value,
-                created_at: currentTime,
-                author_id: String(userID),
-            }
-            const messagePayload: WebSocketMessage = {
+                content: content,
+                created_at: new Date().toISOString(),
+                author_id: userID,
+            };
+            const webSocketMessage: WebSocketMessage = {
                 origin: "client",
                 type: "message",
                 action: "create",
                 message: message,
             };
-            if (!messagePayload.message) {
-                console.error("Message payload is empty");
-                return;
-            }
-            console.log("Sent message:", messagePayload);
-            event.currentTarget.value = '';
-            if (!ws.current) {
-                console.error("WebSocket not connected");
-                return;
-            }
-            ws.current.send(JSON.stringify(messagePayload));
-            setAllMessages({
-                ...allMessages,
-                [selectedCircleID]: [
-                    ...allMessages[selectedCircleID] || [],
-                    message,
-                ],
+            sendMessage(webSocketMessage);
+            setAllMessages((prevMessages) => {
+                const messages = prevMessages[selectedCircleID] || [];
+                return {
+                    ...prevMessages,
+                    [selectedCircleID]: [...messages, message],
+                };
             });
+            (event.target as HTMLInputElement).value = "";
         }
-    };
+    }
 
-    // Receive message from WebSocket
-    useEffect(() => {
-        if (!ws.current) return;
-        ws.current.onmessage = (e) => {
-            try {
-                var parsedData = JSON.parse(e.data);
-                console.log("Parsed data:", parsedData);
-                if (parsedData.origin == "client") {
-                    return;
-                }
-                if (parsedData.type == "message") {
-                    console.log("Received message:", parsedData.message);
-                    if (parsedData.action === "create") {
-                        parsedData = parsedData.message;
-                        console.log("Adding message:", parsedData.content);
-                        const isDuplicate = lastSentMessageTime.current === parsedData.created_at
-                        if (isDuplicate) {
-                            const sentTime = new Date(parsedData.created_at).getTime();
-                            const receivedTime = new Date().getTime();
-                            const timeDifference = receivedTime - sentTime;
-                            console.log(`Message round-trip time: ${timeDifference}ms`);
-                            return;
-                        }
-                        setAllMessages({
-                            ...allMessages,
-                            [parsedData.circle_id]: [
-                                ...allMessages[parsedData.circle_id] || [],
-                                parsedData,
-                            ],
-                        });
-                    }
-                    else if (parsedData.action == "delete") {
-                        parsedData = parsedData.message;
-                        const messageCreatedAt = parsedData.created_at;
-                        console.log("Removing message with created_at:", messageCreatedAt);
-                        setAllMessages({
-                            ...allMessages,
-                            [parsedData.circle_id]: allMessages[parsedData.circle_id].filter((message) => message.created_at !== messageCreatedAt),
-                        });
-                    }
-                }
-                else if (parsedData.type == "circle") {
-                    if (parsedData.action == "create") {
-                        parsedData = parsedData.circle;
-                        console.log("Adding circle:", parsedData.id);
-                        const newCircle = {
-                            id: parsedData.id,
-                            name: parsedData.name,
-                            created_at: parsedData.created_at,
-                        };
-                        setCircles((prevCircles) => [...prevCircles, newCircle]);
-                    }
-                    else if (parsedData.action == "delete") {
-                        parsedData = parsedData.circle;
-                        const circleID = parsedData.id;
-                        console.log("Removing circle with ID:", circleID);
-                        setCircles((prevCircles) => prevCircles.filter((circle) => circle.id !== circleID));
-                        setAllMessages({
-                            ...allMessages,
-                            [circleID]: [],
-                        });
-                    }
-                }
-                else {
-                    console.log("Unknown message type:", parsedData.type);
-                }
-            } catch (error) {
-                console.error("Error parsing WebSocket message:", error);
-            }
-        };
-    }, [ws.current]);
-
-    const [selectedCircleID, setSelectedCircleID] = useState("");
-
-    // Scroll when messages are updated
-    useEffect(() => {
-        const chatContainer = document.querySelector(".chat-placeholder") as HTMLElement;
-        if (chatContainer) {
-            const textBoxHeight = window.innerHeight * 0.94;
-            chatContainer.scrollTop = chatContainer.scrollHeight - textBoxHeight;
-        }
-    }, [allMessages[selectedCircleID]]);
 
     return (
         <>
-            {isFetching ?
+            {!isUserDataFetched ?
                 <div role="status" className="spinner-container">
                     <svg aria-hidden="true" className="w-8 h-8 text-gray-200 animate-spin spinner" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
@@ -353,7 +102,7 @@ export default function Dashboard() {
                         <div>
                             <div className="inline-flex size-16 items-center justify-center">
                                 <span className="grid size-10 place-content-center rounded-lg bg-gray-100 text-xs text-gray-600">
-                                    L
+                                    {username[0]}
                                 </span>
                             </div>
 
@@ -390,32 +139,6 @@ export default function Dashboard() {
                                                 </button>
                                             </li>
                                         ))}
-                                        {/* <li>
-                                            <a
-                                                className="group relative flex justify-center rounded px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                                            >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="size-5 opacity-75"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                                    />
-                                                </svg>
-
-                                                <span
-                                                    className="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
-                                                >
-                                                    Account
-                                                </span>
-                                            </a>
-                                        </li> */}
                                     </ul>
                                 </div>
                             </div>
@@ -542,7 +265,7 @@ export default function Dashboard() {
                                 </button>
                                 <button
                                     className="button-size group disabled:opacity-50 disabled:cursor-not-allowed"
-                                    onClick={selectedCircleID !== "" ? handleDelete : undefined}
+                                    onClick={selectedCircleID !== "" ? () => handleDelete(selectedCircleID) : undefined}
                                     disabled={selectedCircleID === ""}
                                 >
 
@@ -591,3 +314,4 @@ export default function Dashboard() {
 
     )
 };
+

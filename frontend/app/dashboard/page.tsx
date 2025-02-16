@@ -2,11 +2,12 @@
 
 import React from 'react';
 import Dashboard from "../components/Dashboard";
+import { AuthProvider } from "../context/authContext";
 
 export default function Home() {
   return (
-    <div>
+    <AuthProvider>
       <Dashboard />
-    </div>
+    </AuthProvider>
   );
 }

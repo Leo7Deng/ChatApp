@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from "../context/authContext";
+import { User } from "../types";
 import "./InviteModal.css"
 
 interface InviteModalProps {
@@ -8,17 +10,18 @@ interface InviteModalProps {
 }
 
 function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
-    interface User {
-        id: string;
-        username: string;
-        checked: boolean;
+    const authContext = useAuth();
+    if (!authContext) {
+        throw new Error("useAuth must be used within an AuthProvider");
     }
-    
+    const { getAccessToken } = authContext;
+
     const [users, setUsers] = useState<User[]>([]);
     useEffect(() => {
         async function fetchInviteUsers() {
+            const token = await getAccessToken();
             const headers = {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
             };
             const body = {
                 circle_id: circleId,
@@ -27,7 +30,6 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(body),
-                credentials: 'include'
             })
                 .then(async (response) => {
                     const data = await response.json();
@@ -62,11 +64,12 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
         ));
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    async function handleSubmit (e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         const invitedUsers = users.filter(user => user.checked).map(user => user.id);
+        const token = await getAccessToken();
         const headers = {
-            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
         };
         const body = {
             circle_id: circleId,
@@ -77,7 +80,6 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(body),
-            credentials: 'include'
         })
             .then(async (response) => {
                 const data = await response.json();

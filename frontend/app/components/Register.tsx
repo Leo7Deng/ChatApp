@@ -43,7 +43,6 @@ export default function Register() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(registerData),
-                credentials: 'include'
             })
                 .then(async (response) => {
                     const data = await response.json(); 

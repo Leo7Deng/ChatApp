@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '../context/authContext';
 
 interface CreateCircleModalProps {
     isOpen: boolean;
@@ -10,18 +11,24 @@ function CreateCircleModal({ isOpen, setOpen }: CreateCircleModalProps) {
         name: string;
     }
 
-    const createCircle = (circleName: string): void => {
+    const authContext = useAuth();
+    if (!authContext) {
+        throw new Error("useAuth must be used within an AuthProvider");
+    }
+    const { getAccessToken } = authContext;
+
+    async function createCircle(circleName: string): Promise<void> {
         if (circleName === '') return;
         const data: CircleData = {
             name: circleName
         };
+        const token = await getAccessToken();
         fetch('https://127.0.0.1:8000/api/circles', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify(data),
-            credentials: 'include',
         });
     };
 
