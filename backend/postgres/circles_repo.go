@@ -228,6 +228,7 @@ func LoadCircleUserMap() (map[string]map[string]bool, error) {
 		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
 		return nil, err
 	}
+	fmt.Println("LoadCircleUserMap")
 	defer conn.Release()
 
 	rows, err := conn.Query(

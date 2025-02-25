@@ -12,9 +12,8 @@ import (
 	"github.com/Leo7Deng/ChatApp/websockets"
 )
 
-var brokers = []string{"localhost:9092"}
 var topic = "chat"
-
+var brokers = []string{"kafka:9093"}
 var kafkaProducer sarama.SyncProducer
 
 func WebsocketProducer(ctx context.Context, hub *websockets.Hub) {

@@ -4,7 +4,7 @@ create_migration:
 	migrate create -ext=sql -dir=postgres/migrations -seq init
 
 migrate_up:
-	migrate -path=postgres/migrations -database "postgresql://${PSQL_USER}:${PSQL_PASSWORD}@${PSQL_HOST}:${PSQL_PORT}/${PSQL_DBNAME}?sslmode=${PSQL_SSLMODE}" -verbose up
+	migrate -path=postgres/migrations -database "postgresql://${PSQL_USER}:${PSQL_PASSWORD}@localhost:${PSQL_PORT}/${PSQL_DBNAME}?sslmode=disable" -verbose up
 
 migrate_down:
 	migrate -path=postgres/migrations -database "postgresql://${PSQL_USER}:${PSQL_PASSWORD}@${PSQL_HOST}:${PSQL_PORT}/${PSQL_DBNAME}?sslmode=${PSQL_SSLMODE}" -verbose down

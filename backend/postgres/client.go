@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"net/url"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -12,7 +13,8 @@ var pool *pgxpool.Pool
 func ConnectPSQL() {
 	db_url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		os.Getenv("PSQL_USER"),
-		os.Getenv("PSQL_PASSWORD"),
+		// os.Getenv("PSQL_PASSWORD"),
+		url.QueryEscape(os.Getenv("PSQL_PASSWORD")),
 		os.Getenv("PSQL_HOST"),
 		os.Getenv("PSQL_PORT"),
 		os.Getenv("PSQL_DBNAME"),

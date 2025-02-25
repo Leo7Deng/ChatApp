@@ -2,10 +2,13 @@ services:
   postgres:
     image: postgres:latest
     container_name: postgres
+    hostname: postgres
+    networks:
+      - backend-net
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: admin
+      POSTGRES_USER: ${PSQL_USER}
       POSTGRES_PASSWORD: ${PSQL_PASSWORD}
       POSTGRES_DB: ${PSQL_DBNAME}
     volumes:
@@ -13,6 +16,9 @@ services:
   redis:
     image: redis:latest
     container_name: redis
+    networks:
+      - backend-net
+    hostname: redis
     ports:
       - "6379:6379"
     volumes:
@@ -22,28 +28,97 @@ services:
     image: apache/kafka:latest
     container_name: kafka
     hostname: kafka
+    networks:
+      - backend-net
     ports:
       - "9092:9092"
       - "9093:9093"
     environment:
+      # Configure listeners for both docker and host communication
+      KAFKA_LISTENERS: CONTROLLER://localhost:9091,HOST://kafka:9092,DOCKER://kafka:9093
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT,HOST:PLAINTEXT
+
+      # Settings required for KRaft mode
       KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: "controller,broker"
-      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
-      KAFKA_LISTENERS: "PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093"
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
-      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
-      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9091
+
+      # Listener to use for broker-to-broker communication
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+
+      # Required for a single node cluster
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+
       KAFKA_LOG_DIRS: "/var/lib/kafka/data"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_LOG_RETENTION_HOURS: 168
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       CLUSTER_ID: "Mk3OEYBSD34fcwNTJENDM2Qk"
     volumes:
       - kafka-data:/var/lib/kafka/data
+  cassandra-node1:
+    image: cassandra:latest
+    container_name: cassandra-node1
+    hostname: cassandra-node1
+    networks:
+      - backend-net
+    environment:
+      CASSANDRA_CLUSTER_NAME: "cassandra-cluster"
+      CASSANDRA_SEEDS: "cassandra-node1,cassandra-node2,cassandra-node3"
+      CASSANDRA_NUM_TOKENS: 128
+    ports:
+      - "9042:9042"
+    volumes:
+      - cassandra-data-node1:/var/lib/cassandra
+
+  cassandra-node2:
+    image: cassandra:latest
+    container_name: cassandra-node2
+    hostname: cassandra-node2
+    networks:
+      - backend-net
+    depends_on:
+      - cassandra-node1
+    environment:
+      CASSANDRA_CLUSTER_NAME: "cassandra-cluster"
+      CASSANDRA_SEEDS: "cassandra-node1"
+      CASSANDRA_NUM_TOKENS: 128
+    volumes:
+      - cassandra-data-node2:/var/lib/cassandra
+
+  cassandra-node3:
+    image: cassandra:latest
+    container_name: cassandra-node3
+    hostname: cassandra-node3
+    networks:
+      - backend-net
+    depends_on:
+      - cassandra-node1
+    environment:
+      CASSANDRA_CLUSTER_NAME: "cassandra-cluster"
+      CASSANDRA_SEEDS: "cassandra-node1"
+      CASSANDRA_NUM_TOKENS: 128
+    volumes:
+      - cassandra-data-node3:/var/lib/cassandra
+  chat-app:
+    build: .
+    container_name: chat-app
+    networks:
+      - backend-net
+    depends_on:
+      - cassandra-node1
+
+networks:
+  backend-net:
+    driver: bridge
 
 volumes:
   postgres-data:
   redis-data:
   kafka-data:
+  cassandra-data-node1:
+  cassandra-data-node2:
+  cassandra-data-node3:

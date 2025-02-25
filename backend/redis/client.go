@@ -10,8 +10,9 @@ import (
 var client *redis.Client
 
 func RedisClient() {
+	fmt.Println("Creating Redis client")
 	client = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     "redis:6379",
 		Password: os.Getenv("REDIS_PASSWORD"), 
 		DB:       0,  // Use default DB
 		Protocol: 2,  // Connection protocol

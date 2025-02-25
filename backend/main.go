@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net"
 	"sync"
 
 	"github.com/Leo7Deng/ChatApp/auth"
+	"github.com/Leo7Deng/ChatApp/cassandra"
 	"github.com/Leo7Deng/ChatApp/circles"
 	"github.com/Leo7Deng/ChatApp/kafka"
 	"github.com/Leo7Deng/ChatApp/middleware"
@@ -21,7 +23,20 @@ type api struct {
 	addr string
 }
 
+func GetOutboundIP() net.IP {
+    conn, err := net.Dial("udp", "8.8.8.8:80")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer conn.Close()
+
+    localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+    return localAddr.IP
+}
+
 func main() {
+	fmt.Println("IP Address: ", GetOutboundIP())
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Printf("Error loading .env file: %v", err)
@@ -49,6 +64,8 @@ func main() {
 
 	go hub.Run() 
 	fmt.Println("Websocket server started", hub)
+
+	cassandra.CassandraClient()
 
 	mux.HandleFunc("/api/register", middleware.AddCorsHeaders(auth.RegisterHandler))
 	mux.HandleFunc("/api/login", middleware.AddCorsHeaders(auth.LoginHandler))
