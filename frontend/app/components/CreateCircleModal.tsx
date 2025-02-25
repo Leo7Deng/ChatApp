@@ -23,7 +23,7 @@ function CreateCircleModal({ isOpen, setOpen }: CreateCircleModalProps) {
             name: circleName
         };
         const token = await getAccessToken();
-        fetch('https://127.0.0.1:8000/api/circles', {
+        fetch('http://localhost:8000/api/circles', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

@@ -37,11 +37,12 @@ export default function Register() {
             validator.isEmail(registerData.email) &&
             passwordMatch == false
         ) {
-            fetch('https://127.0.0.1:8000/api/register', {
+            fetch('http://localhost:8000/api/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify(registerData),
             })
                 .then(async (response) => {

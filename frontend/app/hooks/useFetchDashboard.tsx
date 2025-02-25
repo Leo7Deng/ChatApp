@@ -18,7 +18,7 @@ export function useFetchDashboard(setCircles: React.Dispatch<React.SetStateActio
         const headers = {
             "Authorization": `Bearer ${token}`,
         };
-        fetch('https://127.0.0.1:8000/api/user', {
+        fetch('http://localhost:8000/api/user', {
             method: 'GET',
             headers: headers,
         })
@@ -44,7 +44,7 @@ export function useFetchDashboard(setCircles: React.Dispatch<React.SetStateActio
         const headers = {
             "Authorization": `Bearer ${token}`,
         };
-        fetch('https://127.0.0.1:8000/api/circles', {
+        fetch('http://localhost:8000/api/circles', {
             method: 'GET',
             headers: headers,
         })
@@ -77,7 +77,7 @@ export function useFetchDashboard(setCircles: React.Dispatch<React.SetStateActio
     async function handleDelete(circleID: string) {
         const token = await getAccessToken();
         try {
-            const response = await fetch(`https://127.0.0.1:8000/api/circles/delete/${circleID}`, {
+            const response = await fetch(`http://localhost:8000/api/circles/delete/${circleID}`, {
                 method: 'DELETE',
                 headers: {
                     "Authorization": `Bearer ${token}`,

@@ -112,8 +112,8 @@ func main() {
 	mux.HandleFunc("/refresh", middleware.AddCorsHeaders(auth.RefreshAccessTokenHandler))
 	
 	go func() {
-		log.Println("Starting HTTPS server on https://127.0.0.1:8000")
-		log.Fatal(srv.ListenAndServeTLS("full-cert.crt", "private-key.key"))
+		// log.Fatal(srv.ListenAndServeTLS("full-cert.crt", "private-key.key"))
+		log.Fatal(srv.ListenAndServe())
 	}()
 
 	wg.Wait()

@@ -108,6 +108,8 @@ services:
     container_name: chat-app
     networks:
       - backend-net
+    ports:
+      - "8000:8000"
     depends_on:
       - cassandra-node1
 

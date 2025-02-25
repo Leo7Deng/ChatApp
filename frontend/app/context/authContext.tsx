@@ -29,7 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     async function refreshAccessToken(): Promise<string> {
         try {
-            const response = await fetch("https://127.0.0.1:8000/refresh", {
+            const response = await fetch("http://localhost:8000/refresh", {
                 method: "POST",
                 credentials: "include",
             });

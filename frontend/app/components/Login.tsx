@@ -18,11 +18,12 @@ export default function Login() {
         if (validator.isEmail(loginData.email) &&
             loginData.password !== ""
         ) {
-            fetch('https://127.0.0.1:8000/api/login', {
+            fetch('http://localhost:8000/api/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify(loginData),
             })
                 .then(response => response.json())
