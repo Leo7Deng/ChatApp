@@ -6,8 +6,8 @@ import { AuthProvider } from "../context/authContext";
 
 export default function Home() {
   return (
-    <AuthProvider>
-      <Dashboard />
-    </AuthProvider>
+      <AuthProvider>
+        <Dashboard />
+      </AuthProvider>
   );
 }

@@ -17,7 +17,7 @@ export function useWebSocketDashboard(setCircles: React.Dispatch<React.SetStateA
     useEffect(() => {
         const connectWebSocket = async () => {
             const token = await getAccessToken();
-            ws.current = new WebSocket("wss://127.0.0.1:8000/ws", [token]);
+            ws.current = new WebSocket("wss://localhost:8000/ws", [token]);
             ws.current.onopen = () => console.log("ws opened");
             ws.current.onclose = () => console.log("ws closed");
             const wsCurrent = ws.current;
