@@ -51,7 +51,6 @@ services:
       # Required for a single node cluster
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-
       KAFKA_LOG_DIRS: "/var/lib/kafka/data"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_LOG_RETENTION_HOURS: 168
