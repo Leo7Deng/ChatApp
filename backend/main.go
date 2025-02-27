@@ -56,16 +56,17 @@ func main() {
 	postgres.ConnectPSQL()
 	defer postgres.ClosePSQL()
 
+	cassandraSession := cassandra.CassandraSession()
+	defer cassandraSession.Close()
+
 	hub := websockets.NewHub()
 	
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
-	kafka.InitKafka(ctx, &wg, hub)
+	kafka.InitKafka(ctx, &wg, hub, cassandraSession)
 
 	go hub.Run() 
 	fmt.Println("Websocket server started", hub)
-
-	cassandra.CassandraClient()
 
 	mux.HandleFunc("/api/register", middleware.AddCorsHeaders(auth.RegisterHandler))
 	mux.HandleFunc("/api/login", middleware.AddCorsHeaders(auth.LoginHandler))

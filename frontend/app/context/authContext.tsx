@@ -19,7 +19,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [shouldRedirect, setShouldRedirect] = useState(false);
 
     async function getAccessToken(): Promise<string> {
-        console.log(Date.now(), expiryTime);
         if (!accessToken || Date.now() >= expiryTime) {
             const token = await refreshAccessToken();
             return token;
