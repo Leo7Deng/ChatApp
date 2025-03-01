@@ -16,10 +16,10 @@ func InitKafka(ctx context.Context, wg *sync.WaitGroup, hub *websockets.Hub, cas
 		WebsocketConsumer(ctx, hub) 
 	}()
 
-	// go func() {
-	// 	defer wg.Done()
-	// 	CassandraConsumer(ctx, cassandraSession)
-	// }()
+	go func() {
+		defer wg.Done()
+		CassandraConsumer(ctx, cassandraSession)
+	}()
 
 	go func() {
 		defer wg.Done()

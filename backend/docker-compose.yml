@@ -65,13 +65,24 @@ services:
     networks:
       - backend-net
     environment:
+      CASSANDRA_START_RPC: "true"
+      CASSANDRA_RPC_ADDRESS: "0.0.0.0"
+      CASSANDRA_LISTEN_ADDRESS: "cassandra-node1"
+      CASSANDRA_ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
       CASSANDRA_CLUSTER_NAME: "cassandra-cluster"
-      CASSANDRA_SEEDS: "cassandra-node1,cassandra-node2,cassandra-node3"
-      CASSANDRA_NUM_TOKENS: 128
+      # CASSANDRA_SEEDS: "cassandra-node1,cassandra-node2"
+      CASSANDRA_NUM_TOKENS: 8
+      CASSANDRA_DC: "dc1"
     ports:
       - "9042:9042"
     volumes:
       - cassandra-data-node1:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD-SHELL", "nodetool status"]
+      interval: 2m
+      timeout: 10s
+      retries: 3
+      start_period: 2m
 
   cassandra-node2:
     image: cassandra:latest
@@ -80,13 +91,25 @@ services:
     networks:
       - backend-net
     depends_on:
-      - cassandra-node1
+      cassandra-node1:
+        condition: service_healthy
     environment:
+      CASSANDRA_START_RPC: "true"
+      CASSANDRA_RPC_ADDRESS: "0.0.0.0"
+      CASSANDRA_LISTEN_ADDRESS: "cassandra-node2"
+      CASSANDRA_ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
       CASSANDRA_CLUSTER_NAME: "cassandra-cluster"
       CASSANDRA_SEEDS: "cassandra-node1"
-      CASSANDRA_NUM_TOKENS: 128
+      CASSANDRA_NUM_TOKENS: 8
+      CASSANDRA_DC: "dc1"
     volumes:
       - cassandra-data-node2:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD-SHELL", "nodetool status"]
+      interval: 2m
+      timeout: 10s
+      retries: 3
+      start_period: 2m
 
   cassandra-node3:
     image: cassandra:latest
@@ -95,13 +118,25 @@ services:
     networks:
       - backend-net
     depends_on:
-      - cassandra-node1
+      cassandra-node2:
+        condition: service_healthy
     environment:
+      CASSANDRA_START_RPC: "true"
+      CASSANDRA_RPC_ADDRESS: "0.0.0.0"
+      CASSANDRA_LISTEN_ADDRESS: "cassandra-node3"
+      CASSANDRA_ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
       CASSANDRA_CLUSTER_NAME: "cassandra-cluster"
       CASSANDRA_SEEDS: "cassandra-node1"
-      CASSANDRA_NUM_TOKENS: 128
+      CASSANDRA_NUM_TOKENS: 8
+      CASSANDRA_DC: "dc1"
     volumes:
       - cassandra-data-node3:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD-SHELL", "nodetool status"]
+      interval: 2m
+      timeout: 10s
+      retries: 3
+      start_period: 2m
   chat-app:
     build: .
     container_name: chat-app

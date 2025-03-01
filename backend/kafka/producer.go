@@ -12,7 +12,6 @@ import (
 )
 
 var topic = "chat"
-var partitions = int32(3)
 var brokers = []string{"kafka:9093"}
 var kafkaProducer sarama.SyncProducer
 
@@ -45,7 +44,6 @@ func WebsocketProducer(ctx context.Context, hub *websockets.Hub) {
 		switch websocketMessage.Type {
 		case "message":
 			if websocketMessage.Message != nil {
-				// log.Printf("New Message: %s from %s\n", websocketMessage.Message.Content, websocketMessage.Message.AuthorID)
 				msg := &sarama.ProducerMessage{
 					Topic: topic,
 					Value: sarama.StringEncoder(message),
