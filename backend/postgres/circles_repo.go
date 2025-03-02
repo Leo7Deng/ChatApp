@@ -221,6 +221,37 @@ func GetInviteUsersInCircle(userID string, circleID string) ([]models.User, erro
 	return users, nil
 }
 
+func GetExistingUsersInCircle(circleID string) ([]models.UserRole, error) {
+	var users []models.UserRole
+	rows, err := pool.Query(
+		context.Background(),
+		`
+		SELECT u.id, u.username, uc.role
+		FROM users u
+		INNER JOIN users_circles uc ON u.id = uc.user_id
+		WHERE uc.circle_id = $1
+		ORDER BY u.username ASC;
+		`,
+		circleID,
+	)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to query PSQL: %v\n", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var user models.UserRole
+		err = rows.Scan(&user.User.ID, &user.User.Username, &user.Role)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to scan row: %v\n", err)
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
+
 func LoadCircleUserMap() (map[string]map[string]bool, error) {
 	ctx := context.Background()
 	conn, err := pool.Acquire(ctx)

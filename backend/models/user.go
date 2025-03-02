@@ -9,6 +9,11 @@ type User struct {
 	Password        string `json:"password"`
 }
 
+type UserRole struct {
+	User User
+	Role string
+}
+
 type RegisterData struct {
 	FirstName       string `json:"firstName"`
 	LastName        string `json:"lastName"`
