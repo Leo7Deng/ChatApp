@@ -84,6 +84,13 @@ func main() {
 			}),
 		),
 	))
+	mux.Handle("/api/circles/edit", middleware.AddCorsHeaders(
+		middleware.AuthMiddleware(
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				circles.GetEditUsersHandler(w, r)
+			}),
+		),
+	))
 	mux.Handle("/api/circles/delete/{id}", middleware.AddCorsHeaders(
 		middleware.AuthMiddleware(
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
