@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../context/authContext";
 import { EditUser } from "../types";
-import "./InviteModal.css"
+import "./EditModal.css"
 
 interface InviteModalProps {
     isOpen: boolean;
@@ -129,7 +129,7 @@ function EditModal({ isOpen, setOpen, circleId }: InviteModalProps) {
                                     <select
                                         value={user.role}
                                         onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                                        className="border border-gray-300 p-1 rounded"
+                                        className="border border-gray-300 p-1 rounded select-role"
                                     >
                                         <option value="member">Member</option>
                                         <option value="admin">Admin</option>
