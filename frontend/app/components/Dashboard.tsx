@@ -3,6 +3,7 @@
 import "./Dashboard.css"
 import React, { useEffect, useRef, useState } from "react";
 import CreateCircleModal from "./CreateCircleModal";
+import EditModal from "./EditModal";
 import InviteModal from "./InviteModal";
 import { useFetchDashboard } from "../hooks/useFetchDashboard";
 import { useWebSocketDashboard } from "../hooks/useWebsocketDashboard";
@@ -12,7 +13,7 @@ export default function Dashboard2() {
     const [isUserDataFetched, setIsUserDataFetched] = useState(false);
     const [selectedCircleID, setSelectedCircleID] = useState("");
     const [allMessages, setAllMessages] = useState<{ [key: string]: Message[] }>({});
-    
+
     const [circles, setCircles] = useState<Circle[]>([]);
     const { userID, username, fetchUserData, handleDelete } = useFetchDashboard(setCircles);
     const { sendMessage } = useWebSocketDashboard(setCircles, allMessages, setAllMessages);
@@ -55,6 +56,17 @@ export default function Dashboard2() {
     const handleInviteClose = (event: HandleCloseEvent) => {
         if (event.target.classList.contains('modal-container')) {
             setOpenInviteModal(false);
+        }
+    };
+
+    // Edit users in circle
+    const [openEditModal, setOpenEditModal] = useState(false);
+    function handleOpenEditModal() {
+        setOpenEditModal(true);
+    }
+    const handleEditClose = (event: HandleCloseEvent) => {
+        if (event.target.classList.contains('modal-container')) {
+            setOpenEditModal(false);
         }
     };
 
@@ -232,11 +244,38 @@ export default function Dashboard2() {
                                 <InviteModal isOpen={openInviteModal} setOpen={() => setOpenInviteModal(false)} circleId={selectedCircleID} />
                             </div>
                         </div>}
+                        {openEditModal && <div className="modal-container" onClick={handleEditClose}>
+                            <div className="modal inset-0 bg-black bg-opacity-50 z-50">
+                                <EditModal isOpen={openEditModal} setOpen={() => setOpenEditModal(false)} circleId={selectedCircleID} />
+                            </div>
+                        </div>}
                     </div>
                     <div className="chat-container">
                         <div className="chat-title">
                             <h1>{circles.find((circle) => circle.id === selectedCircleID)?.name}&nbsp;</h1>
                             <div className="chat-menu">
+                                <button
+                                    className="button-size group disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={selectedCircleID !== "" ? handleOpenEditModal : undefined}
+                                    disabled={selectedCircleID === ""}
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="size-4 opacity-75"
+                                        fill="currentColor"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        strokeWidth="1"
+                                    >
+                                        <path d="M3.5,24h15A3.51,3.51,0,0,0,22,20.487V12.95a1,1,0,0,0-2,0v7.537A1.508,1.508,0,0,1,18.5,22H3.5A1.508,1.508,0,0,1,2,20.487V5.513A1.508,1.508,0,0,1,3.5,4H11a1,1,0,0,0,0-2H3.5A3.51,3.51,0,0,0,0,5.513V20.487A3.51,3.51,0,0,0,3.5,24Z"></path>
+                                        <path d="M9.455,10.544l-.789,3.614a1,1,0,0,0,.271.921,1.038,1.038,0,0,0,.92.269l3.606-.791a1,1,0,0,0,.494-.271l9.114-9.114a3,3,0,0,0,0-4.243,3.07,3.07,0,0,0-4.242,0l-9.1,9.123A1,1,0,0,0,9.455,10.544Zm10.788-8.2a1.022,1.022,0,0,1,1.414,0,1.009,1.009,0,0,1,0,1.413l-.707.707L19.536,3.05Zm-8.9,8.914,6.774-6.791,1.4,1.407-6.777,6.793-1.795.394Z"></path>
+                                    </svg>
+                                    <span
+                                        className="invisible absolute start-1/2 top-full mt-5 -translate-x-1/2 rounded bg-gray-900 px-1.5 py-1.5 text-xs font-medium text-white group-hover:visible"
+                                    >
+                                        Edit Users
+                                    </span>
+                                </button>
                                 <button
                                     className="button-size group disabled:opacity-50 disabled:cursor-not-allowed"
                                     onClick={selectedCircleID !== "" ? handleOpenInviteModal : undefined}
@@ -308,8 +347,7 @@ export default function Dashboard2() {
                         <div className="analytics-placeholder">
                         </div>
                     </div>
-                </div>
-            }
+                </div>}
         </>
 
     )

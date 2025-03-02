@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../context/authContext";
-import { User } from "../types";
+import { EditUser } from "../types";
 import "./InviteModal.css"
 
 interface InviteModalProps {
@@ -9,24 +9,25 @@ interface InviteModalProps {
     circleId: string;
 }
 
-function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
+function EditModal({ isOpen, setOpen, circleId }: InviteModalProps) {
     const authContext = useAuth();
     if (!authContext) {
         throw new Error("useAuth must be used within an AuthProvider");
     }
     const { getAccessToken } = authContext;
-
-    const [users, setUsers] = useState<User[]>([]);
+    const [users, setUsers] = useState<EditUser[]>([]);
+    
     useEffect(() => {
         async function fetchInviteUsers() {
             const token = await getAccessToken();
             const headers = {
                 'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             };
             const body = {
                 circle_id: circleId,
             };
-            fetch('http://localhost:8000/api/circles/invite', {
+            fetch('http://localhost:8000/api/circles/edit', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(body),
@@ -35,13 +36,13 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
                     const data = await response.json();
                     if (!response.ok) {
                         console.log("Error:", data);
-                    }
-                    else {
+                    } else {
                         console.log("Data:", data);
+                        // Initialize each user with a default role of "member"
                         const mappedUsers = data.map((user: any) => ({
                             id: user.id,
                             username: user.username,
-                            checked: false
+                            role: 'member'
                         }));
                         setUsers(mappedUsers);
                     }
@@ -51,32 +52,31 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
                 });
         }
         fetchInviteUsers();
-    }, [circleId]);
-
-    const handleInviteAllChange = () => {
-        setInviteAll((prev) => !prev);
-        setUsers(users.map(user => ({ ...user, checked: !inviteAll })));
-    };
-
-    const handleUserCheckboxChange = (userId: string) => {
-        setUsers(users.map(user =>
-            user.id === userId ? { ...user, checked: !user.checked } : user
-        ));
+    }, [circleId, getAccessToken]);
+    
+    // Update the role for the specified user
+    const handleRoleChange = (userId: string, newRole: string) => {
+        setUsers(prevUsers => 
+            prevUsers.map(user => 
+                user.id === userId ? { ...user, role: newRole } : user
+            )
+        );
     };
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        const invitedUsers = users.filter(user => user.checked).map(user => user.id);
         const token = await getAccessToken();
         const headers = {
             'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
         };
+        // Send each user's id and the chosen role
         const body = {
             circle_id: circleId,
-            users: invitedUsers,
+            users: users.map(user => ({ id: user.id, role: user.role })),
         };
         console.log(body);
-        fetch('http://localhost:8000/api/circles/invite/add', {
+        fetch('http://localhost:8000/api/circles/edit/add', {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(body),
@@ -85,8 +85,7 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
                 const data = await response.json();
                 if (!response.ok) {
                     console.log("Error:", data);
-                }
-                else {
+                } else {
                     console.log("Data:", data);
                     setOpen(false);
                 }
@@ -96,10 +95,8 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
             });
     };
 
-    const [inviteAll, setInviteAll] = useState(false);
-
     if (!isOpen) return null;
-
+    
     return (
         <div className="mx-auto max-w-screen-xl px-4 py-2 sm:px-6 lg:px-8 relative z-10 focus:outline-none">
             <form action="#" className="mx-auto mb-4 mt-6 max-w-md space-y-4" onSubmit={handleSubmit}>
@@ -126,25 +123,23 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
                                     <p className="font-medium text-sm text-gray-500">No users found</p>
                                 </li>
                             )}
-                            {users.length != 0 && users.map((user) => (
-                                <label key={user.id} className="user-item flex items-center gap-2">
-                                    <div className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            className="size-5 rounded border-gray-300 text-blue-500 shadow-sm focus:ring-0"
-                                            checked={user.checked}
-                                            onChange={() => handleUserCheckboxChange(user.id)}
-                                        />
-                                    </div>
-                                    <div className="flex items-center">
-                                        <p className="font-medium text-sm text-gray-500">{user.username}</p>
-                                    </div>
-                                </label>
+                            {users.length != 0 && users.map(user => (
+                                <li key={user.id} className="user-item flex items-center gap-2">
+                                    <p className="font-medium text-sm text-gray-500">{user.username}</p>
+                                    <select
+                                        value={user.role}
+                                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                        className="border border-gray-300 p-1 rounded"
+                                    >
+                                        <option value="member">Member</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </li>
                             ))}
                         </ul>
                     </div>
                 </div>
-
+    
                 <div className="flex items-center justify-between">
                     <button
                         type="submit"
@@ -152,24 +147,10 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
                     >
                         Submit
                     </button>
-
-                    <label className="flex cursor-pointer items-center gap-2">
-                        <div className="flex items-center">
-                            &#8203;
-                            <input
-                                type="checkbox"
-                                className="size-5 rounded border-gray-300 text-blue-500 shadow-sm focus:ring-0"
-                                checked={inviteAll}
-                                onChange={handleInviteAllChange}
-                            />
-                        </div>
-                        <div className="flex items-center">
-                            <p className="font-medium text-sm text-gray-500">Invite all users</p>
-                        </div>
-                    </label>
                 </div>
             </form>
         </div>
     );
 }
-export default InviteModal;
+
+export default EditModal;

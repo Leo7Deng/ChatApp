@@ -24,3 +24,9 @@ export interface User {
     username: string;
     checked: boolean;
 }
+
+export interface EditUser {
+    id: string;
+    username: string;
+    role: string;
+}
