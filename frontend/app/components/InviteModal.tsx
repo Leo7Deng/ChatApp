@@ -101,7 +101,7 @@ function InviteModal({ isOpen, setOpen, circleId }: InviteModalProps) {
     if (!isOpen) return null;
 
     return (
-        <div className="mx-auto max-w-screen-xl px-4 py-2 sm:px-6 lg:px-8 relative z-10 focus:outline-none">
+        <div className="mx-auto max-w-screen-xl relative z-10 focus:outline-none">
             <form action="#" className="mx-auto mb-4 mt-6 max-w-md space-y-4" onSubmit={handleSubmit}>
                 <div>
                     <div className="search w-full relative rounded-md">

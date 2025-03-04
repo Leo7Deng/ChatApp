@@ -3,9 +3,10 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/Leo7Deng/ChatApp/models"
 	"os"
 	"time"
+
+	"github.com/Leo7Deng/ChatApp/models"
 )
 
 func GetUserCircles(userID string) ([]models.Circle, error) {
@@ -221,7 +222,65 @@ func GetInviteUsersInCircle(userID string, circleID string) ([]models.User, erro
 	return users, nil
 }
 
-func GetExistingUsersInCircle(circleID string) ([]models.UserRole, error) {
+func EditRoleInCircle(circleID string, targetUserID string, role string) error {
+	ctx := context.Background()
+	conn, err := pool.Acquire(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
+	}
+	defer conn.Release()
+
+	err = conn.QueryRow(
+		ctx,
+		`
+		UPDATE users_circles
+		SET role = $1
+		WHERE user_id = $2 AND circle_id = $3
+		RETURNING role;
+		`,
+		role,
+		targetUserID,
+		circleID,
+	).Scan(&role)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to query PSQL: %v\n", err)
+		return err
+	}
+	fmt.Printf("Role updated: %v\n", role)
+	return nil
+}
+
+
+func GetRoleInCircle(userID string, circleID string) (string, error) {
+	var role string
+	err := pool.QueryRow(
+		context.Background(),
+		`
+		SELECT role
+		FROM users_circles
+		WHERE user_id = $1 AND circle_id = $2;
+		`,
+		userID,
+		circleID,
+	).Scan(&role)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to query PSQL: %v\n", err)
+		return "", err
+	}
+	return role, nil
+}
+
+func GetExistingUsersInCircle(userID string, circleID string) ([]models.UserRole, error) {
+	requestingRole, err := GetRoleInCircle(userID, circleID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to get role in circle: %v\n", err)
+		return nil, err
+	}
+	if requestingRole != "admin" {
+		fmt.Fprintf(os.Stderr, "User is not admin of circle\n")
+		return nil, fmt.Errorf("permission error")
+	}
+
 	var users []models.UserRole
 	rows, err := pool.Query(
 		context.Background(),
@@ -229,9 +288,10 @@ func GetExistingUsersInCircle(circleID string) ([]models.UserRole, error) {
 		SELECT u.id, u.username, uc.role
 		FROM users u
 		INNER JOIN users_circles uc ON u.id = uc.user_id
-		WHERE uc.circle_id = $1
+		WHERE u.id != $1 AND uc.circle_id = $2
 		ORDER BY u.username ASC;
 		`,
+		userID,
 		circleID,
 	)
 	if err != nil {
@@ -242,7 +302,7 @@ func GetExistingUsersInCircle(circleID string) ([]models.UserRole, error) {
 
 	for rows.Next() {
 		var user models.UserRole
-		err = rows.Scan(&user.User.ID, &user.User.Username, &user.Role)
+		err = rows.Scan(&user.UserID, &user.Username, &user.Role)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to scan row: %v\n", err)
 			return nil, err

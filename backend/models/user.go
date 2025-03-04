@@ -10,8 +10,9 @@ type User struct {
 }
 
 type UserRole struct {
-	User User
-	Role string
+	UserID string `json:"id"`
+	Username string `json:"username"`
+	Role string `json:"role"`
 }
 
 type RegisterData struct {

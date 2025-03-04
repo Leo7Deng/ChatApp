@@ -17,7 +17,7 @@ func AddCorsHeaders(handler http.HandlerFunc) http.HandlerFunc {
 			w.Header().Set("Access-Control-Allow-Origin", "https://leo7deng.github.io")
 		}
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, DELETE, GET")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, DELETE, GET, PUT")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		// Handle preflight OPTIONS requests
 		if r.Method == "OPTIONS" {

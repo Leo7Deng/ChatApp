@@ -87,7 +87,7 @@ func main() {
 	mux.Handle("/api/circles/edit", middleware.AddCorsHeaders(
 		middleware.AuthMiddleware(
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				circles.GetEditUsersHandler(w, r)
+				circles.EditUsersHandler(w, r)
 			}),
 		),
 	))

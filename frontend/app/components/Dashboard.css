@@ -19,10 +19,13 @@
 }
 
 .modal {
-    width: 35vw;
+    width: 24rem;
     max-height: 50vh;
     background: white;
     border-radius: 10px;
+    padding: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 }
 
 .chat-container {

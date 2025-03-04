@@ -18,11 +18,10 @@ function EditModal({ isOpen, setOpen, circleId }: InviteModalProps) {
     const [users, setUsers] = useState<EditUser[]>([]);
     
     useEffect(() => {
-        async function fetchInviteUsers() {
+        async function fetchEditUsers() {
             const token = await getAccessToken();
             const headers = {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
             };
             const body = {
                 circle_id: circleId,
@@ -38,11 +37,10 @@ function EditModal({ isOpen, setOpen, circleId }: InviteModalProps) {
                         console.log("Error:", data);
                     } else {
                         console.log("Data:", data);
-                        // Initialize each user with a default role of "member"
                         const mappedUsers = data.map((user: any) => ({
                             id: user.id,
                             username: user.username,
-                            role: 'member'
+                            role: user.role,
                         }));
                         setUsers(mappedUsers);
                     }
@@ -51,10 +49,9 @@ function EditModal({ isOpen, setOpen, circleId }: InviteModalProps) {
                     console.log(error);
                 });
         }
-        fetchInviteUsers();
+        fetchEditUsers();
     }, [circleId, getAccessToken]);
     
-    // Update the role for the specified user
     const handleRoleChange = (userId: string, newRole: string) => {
         setUsers(prevUsers => 
             prevUsers.map(user => 
@@ -68,16 +65,14 @@ function EditModal({ isOpen, setOpen, circleId }: InviteModalProps) {
         const token = await getAccessToken();
         const headers = {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
         };
-        // Send each user's id and the chosen role
         const body = {
             circle_id: circleId,
             users: users.map(user => ({ id: user.id, role: user.role })),
         };
         console.log(body);
-        fetch('http://localhost:8000/api/circles/edit/add', {
-            method: 'POST',
+        fetch('http://localhost:8000/api/circles/edit', {
+            method: 'PUT',
             headers: headers,
             body: JSON.stringify(body),
         })
@@ -98,7 +93,7 @@ function EditModal({ isOpen, setOpen, circleId }: InviteModalProps) {
     if (!isOpen) return null;
     
     return (
-        <div className="mx-auto max-w-screen-xl px-4 py-2 sm:px-6 lg:px-8 relative z-10 focus:outline-none">
+        <div className="mx-auto max-w-screen-xl relative z-10 focus:outline-none">
             <form action="#" className="mx-auto mb-4 mt-6 max-w-md space-y-4" onSubmit={handleSubmit}>
                 <div>
                     <div className="search w-full relative rounded-md">
@@ -120,12 +115,12 @@ function EditModal({ isOpen, setOpen, circleId }: InviteModalProps) {
                         <ul>
                             {users.length === 0 && (
                                 <li className="user-item flex items-center gap-2">
-                                    <p className="font-medium text-sm text-gray-500">No users found</p>
+                                    <p className="font-medium text-sm text-gray-500">You don't have admin access to this circle</p>
                                 </li>
                             )}
                             {users.length != 0 && users.map(user => (
                                 <li key={user.id} className="user-item flex items-center gap-2">
-                                    <p className="font-medium text-sm text-gray-500">{user.username}</p>
+                                    <p className="font-medium text-sm text-gray-500 username">{user.username}</p>
                                     <select
                                         value={user.role}
                                         onChange={(e) => handleRoleChange(user.id, e.target.value)}
