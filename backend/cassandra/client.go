@@ -23,7 +23,6 @@ func CassandraSession() *gocql.Session {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer session.Close()
 	fmt.Println("Connected to Cassandra Nodes:")
 	for _, host := range cluster.Hosts {
 		fmt.Println("- Node:", host)

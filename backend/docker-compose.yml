@@ -70,7 +70,7 @@ services:
       CASSANDRA_LISTEN_ADDRESS: "cassandra-node1"
       CASSANDRA_ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
       CASSANDRA_CLUSTER_NAME: "cassandra-cluster"
-      # CASSANDRA_SEEDS: "cassandra-node1,cassandra-node2"
+      CASSANDRA_SEEDS: "cassandra-node1"
       CASSANDRA_NUM_TOKENS: 8
       CASSANDRA_DC: "dc1"
     ports:
@@ -102,6 +102,8 @@ services:
       CASSANDRA_SEEDS: "cassandra-node1"
       CASSANDRA_NUM_TOKENS: 8
       CASSANDRA_DC: "dc1"
+    ports:
+      - "9043:9042"
     volumes:
       - cassandra-data-node2:/var/lib/cassandra
     healthcheck:
@@ -129,6 +131,8 @@ services:
       CASSANDRA_SEEDS: "cassandra-node1"
       CASSANDRA_NUM_TOKENS: 8
       CASSANDRA_DC: "dc1"
+    ports:
+      - "9044:9042"
     volumes:
       - cassandra-data-node3:/var/lib/cassandra
     healthcheck:
