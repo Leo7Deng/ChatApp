@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 
 	"github.com/IBM/sarama"
@@ -13,10 +14,13 @@ import (
 	"github.com/Leo7Deng/ChatApp/models"
 	"github.com/Leo7Deng/ChatApp/websockets"
 	"github.com/gocql/gocql"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var hub *websockets.Hub
 var cassandraSession *gocql.Session
+var pool *pgxpool.Pool
 
 func WebsocketConsumer(ctx context.Context, websocketHub *websockets.Hub) {
 	hub = websocketHub
@@ -31,6 +35,14 @@ func CassandraConsumer(ctx context.Context, session *gocql.Session) {
 	handler := &CassandraConsumerHandler{}
 	runConsumer(ctx, groupID, handler)
 }
+
+func PostgresConsumer(ctx context.Context, postgresPool *pgxpool.Pool) {
+	pool = postgresPool
+	groupID := "postgres-group"
+	handler := &PostgresConsumerHandler{}
+	runConsumer(ctx, groupID, handler)
+}
+
 
 func runConsumer(ctx context.Context, groupID string, handler sarama.ConsumerGroupHandler) {
 	config := sarama.NewConfig()
@@ -74,6 +86,7 @@ func runConsumer(ctx context.Context, groupID string, handler sarama.ConsumerGro
 
 type WebsocketConsumerHandler struct {hub *websockets.Hub}
 type CassandraConsumerHandler struct {}
+type PostgresConsumerHandler struct {}
 
 // Setup is run at the beginning of a new session, before ConsumeClaim
 func (consumer *WebsocketConsumerHandler) Setup(sarama.ConsumerGroupSession) error {
@@ -82,12 +95,18 @@ func (consumer *WebsocketConsumerHandler) Setup(sarama.ConsumerGroupSession) err
 func (consumer *CassandraConsumerHandler) Setup(sarama.ConsumerGroupSession) error {
 	return nil
 }
+func (consumer *PostgresConsumerHandler) Setup(sarama.ConsumerGroupSession) error {
+	return nil
+}
 
 // Cleanup is run at the end of a session, once all ConsumeClaim goroutines have exited
 func (consumer *WebsocketConsumerHandler) Cleanup(sarama.ConsumerGroupSession) error {
 	return nil
 }
 func (consumer *CassandraConsumerHandler) Cleanup(sarama.ConsumerGroupSession) error {
+	return nil
+}
+func (consumer *PostgresConsumerHandler) Cleanup(sarama.ConsumerGroupSession) error {
 	return nil
 }
 
@@ -154,6 +173,59 @@ func (consumer *CassandraConsumerHandler) ConsumeClaim(session sarama.ConsumerGr
 			} else {
 				log.Printf("Message inserted into Cassandra: %v\n", insertMessage)
 				session.MarkMessage(message, "")
+			}
+		case <-session.Context().Done():
+			return nil
+		}
+	}
+}
+
+func (consumer *PostgresConsumerHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	for {
+		select {
+		case message, ok := <-claim.Messages():
+			if !ok {
+				log.Printf("message channel was closed")
+				return nil
+			}
+			partition, offset := message.Partition, message.Offset
+			var websocketMessage models.WebsocketMessage
+			err := json.Unmarshal(message.Value, &websocketMessage)
+			if err != nil {
+				fmt.Printf("Failed to unmarshal message: %v\n", err)
+			}
+			log.Printf("Postgres consumer: %s | Partition: %d | Offset: %d\n", message.Value, partition, offset)
+			type InsertMessage struct {
+				MessageID string `json:"message_id"`
+				Message models.Message `json:"message"`
+			}
+			insertMessage := InsertMessage{
+				MessageID: uuid.New().String(),
+				Message: models.Message{
+					CircleID: websocketMessage.Message.CircleID,
+					AuthorID: websocketMessage.Message.AuthorID,
+					Content:  websocketMessage.Message.Content,
+					CreatedAt: websocketMessage.Message.CreatedAt,
+				},
+			}
+			conn, err := pool.Acquire(session.Context())
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
+				return err
+			}
+			defer conn.Release()
+
+			_, err = conn.Exec(
+				session.Context(),
+				"INSERT INTO messages (message_id, circle_id, author_id, content) VALUES ($1, $2, $3, $4)",
+				insertMessage.MessageID,
+				insertMessage.Message.CircleID,
+				insertMessage.Message.AuthorID,
+				insertMessage.Message.Content,
+			)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error inserting into messages: %v\n", err)
+				return err
 			}
 		case <-session.Context().Done():
 			return nil

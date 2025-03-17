@@ -11,11 +11,10 @@ import (
 var pool *pgxpool.Pool
 
 func ConnectPSQL() {
-	db_url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+	db_url := fmt.Sprintf("postgres://%s:%s@postgres:%s/%s?sslmode=%s",
 		os.Getenv("PSQL_USER"),
 		// os.Getenv("PSQL_PASSWORD"),
 		url.QueryEscape(os.Getenv("PSQL_PASSWORD")),
-		os.Getenv("PSQL_HOST"),
 		os.Getenv("PSQL_PORT"),
 		os.Getenv("PSQL_DBNAME"),
 		os.Getenv("PSQL_SSLMODE"),

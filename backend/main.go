@@ -55,6 +55,8 @@ func main() {
 
 	postgres.ConnectPSQL()
 	defer postgres.ClosePSQL()
+	pool := postgres.GetPool()
+	defer pool.Close()
 
 	cassandraSession := cassandra.CassandraSession()
 	defer cassandraSession.Close()
@@ -63,7 +65,7 @@ func main() {
 	
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
-	kafka.InitKafka(ctx, &wg, hub, cassandraSession)
+	kafka.InitKafka(ctx, &wg, hub, cassandraSession, pool)
 
 	go hub.Run() 
 	fmt.Println("Websocket server started", hub)
