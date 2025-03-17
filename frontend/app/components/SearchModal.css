@@ -1,3 +1,23 @@
 .search-modal {
     height: 80vh;
 }
+
+.search-result-content {
+    color: hsl(0, 0%, 20%);
+    font-size: 1rem;
+}
+
+.search-result-subtitle {
+    color: hsl(0, 0%, 40%);
+    font-size: 0.8rem;
+    margin-top: -0.2rem;
+    margin-bottom: 0.2rem;
+}
+
+.search-results {
+    padding: 1rem;
+    overflow-y: scroll;
+    height: 34vh;
+    border: 1px solid hsl(0, 0%, 90%);
+    border-radius: 5px;
+}

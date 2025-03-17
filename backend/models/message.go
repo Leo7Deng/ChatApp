@@ -1,7 +1,5 @@
 package models
 
-import "time"
-
 type WebsocketMessage struct {
 	Origin  string      `json:"origin"` // user or server
     Type string      `json:"type"` // message or circle
@@ -19,6 +17,6 @@ type Message struct {
 
 type SearchMessage struct {
 	Content string `json:"content"`
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt string `json:"created_at"`
 	AuthorUsername string `json:"author_username"`
 }

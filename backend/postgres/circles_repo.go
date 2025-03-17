@@ -378,13 +378,15 @@ func SearchCircle(circleID string, content string) ([]models.SearchMessage, erro
 	defer rows.Close()
 
 	var messages []models.SearchMessage
+	var time time.Time
 	for rows.Next() {
 		var message models.SearchMessage
-		err = rows.Scan(&message.Content, &message.CreatedAt, &message.AuthorUsername)
+		err = rows.Scan(&message.Content, &time, &message.AuthorUsername)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to scan row: %v\n", err)
 			return nil, err
 		}
+		message.CreatedAt = time.Format("2006-01-02 15:04:05 EST")
 		messages = append(messages, message)
 	}
 	return messages, nil

@@ -16,6 +16,7 @@ function SearchModal({ isOpen, setOpen, circleId }: SearchModalProps) {
     }
     const { getAccessToken } = authContext;
 
+    const [results, setResults] = useState<any[]>([]);
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         const token = await getAccessToken();
@@ -34,12 +35,17 @@ function SearchModal({ isOpen, setOpen, circleId }: SearchModalProps) {
         })
             .then(async (response) => {
                 const data = await response.json();
+                const mappedResults = data.map((result: any) => ({
+                    content: result.content,
+                    created_at: result.created_at,
+                    author: result.author_username
+                }));
+                setResults(mappedResults);
                 if (!response.ok) {
                     console.log("Error:", data);
                 }
                 else {
                     console.log("Data:", data);
-                    setOpen(false);
                 }
             })
             .catch(error => {
@@ -70,6 +76,14 @@ function SearchModal({ isOpen, setOpen, circleId }: SearchModalProps) {
                     </button>
                 </div>
             </form>
+            <div className="search-results">
+                {results && results.map((result, index) => (
+                    <div key={index} className="search-result">
+                        <div className="search-result-content">{result.content}</div>
+                        <div className="search-result-subtitle">{result.author + " | " + result.created_at}</div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
