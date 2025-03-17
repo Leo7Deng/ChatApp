@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { useAuth } from "../context/authContext";
-import { User } from "../types";
 import "./SearchModal.css"
+import { text } from 'stream/consumers';
 
 interface SearchModalProps {
     isOpen: boolean;
@@ -16,53 +16,15 @@ function SearchModal({ isOpen, setOpen, circleId }: SearchModalProps) {
     }
     const { getAccessToken } = authContext;
 
-    const [users, setUsers] = useState<User[]>([]);
-    useEffect(() => {
-        async function fetchInviteUsers() {
-            const token = await getAccessToken();
-            const headers = {
-                'Authorization': `Bearer ${token}`,
-            };
-            const body = {
-                circle_id: circleId,
-            };
-            fetch('http://localhost:8000/api/circles/invite', {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(body),
-            })
-                .then(async (response) => {
-                    const data = await response.json();
-                    if (!response.ok) {
-                        console.log("Error:", data);
-                    }
-                    else {
-                        console.log("Data:", data);
-                        const mappedUsers = data.map((user: any) => ({
-                            id: user.id,
-                            username: user.username,
-                            checked: false
-                        }));
-                        setUsers(mappedUsers);
-                    }
-                })
-                .catch(error => {
-                    console.log(error);
-                });
-        }
-        fetchInviteUsers();
-    }, [circleId]);
-
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        const invitedUsers = users.filter(user => user.checked).map(user => user.id);
         const token = await getAccessToken();
         const headers = {
             'Authorization': `Bearer ${token}`,
         };
         const body = {
             circle_id: circleId,
-            users: invitedUsers,
+            content: (e.currentTarget.elements.namedItem('circleName') as HTMLInputElement).value,
         };
         console.log(body);
         fetch('http://localhost:8000/api/circles/search', {
@@ -85,8 +47,6 @@ function SearchModal({ isOpen, setOpen, circleId }: SearchModalProps) {
             });
     };
 
-    const [inviteAll, setInviteAll] = useState(false);
-
     if (!isOpen) return null;
 
     return (
@@ -98,21 +58,15 @@ function SearchModal({ isOpen, setOpen, circleId }: SearchModalProps) {
                         placeholder="Search text"
                         id="circleName"
                     />
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        className="size-11 search-icon hover:cursor-pointer"
-                        fill="hsl(0, 0%, 95%)"
-                        viewBox="0 0 24 24"
-                        stroke="hsl(0, 0%, 95%)"
-                        strokeWidth="1">
-                        <path d="M 9 2 C 5.1458514 2 2 5.1458514 2 9 C 2 12.854149 5.1458514 16 9 16 C 10.747998 16 12.345009 15.348024 13.574219 14.28125 L 14 14.707031 L 14 16 L 20 22 L 22 20 L 16 14 L 14.707031 14 L 14.28125 13.574219 C 15.348024 12.345009 16 10.747998 16 9 C 16 5.1458514 12.854149 2 9 2 z M 9 4 C 11.773268 4 14 6.2267316 14 9 C 14 11.773268 11.773268 14 9 14 C 6.2267316 14 4 11.773268 4 9 C 4 6.2267316 6.2267316 4 9 4 z"></path>
-                    </svg>
-                </div>
-                <div className="flex items-center justify-between">
-                    <button
-                        type="submit"
-                        className="inline-block rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white"
-                    >
-                        Submit
+                    <button type="submit">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            className="size-11 search-icon hover:cursor-pointer"
+                            fill="hsl(0, 0%, 100%)"
+                            viewBox="0 0 24 24"
+                            stroke="hsl(0, 0%, 100%)"
+                            strokeWidth="1">
+                            <path d="M 9 2 C 5.1458514 2 2 5.1458514 2 9 C 2 12.854149 5.1458514 16 9 16 C 10.747998 16 12.345009 15.348024 13.574219 14.28125 L 14 14.707031 L 14 16 L 20 22 L 22 20 L 16 14 L 14.707031 14 L 14.28125 13.574219 C 15.348024 12.345009 16 10.747998 16 9 C 16 5.1458514 12.854149 2 9 2 z M 9 4 C 11.773268 4 14 6.2267316 14 9 C 14 11.773268 11.773268 14 9 14 C 6.2267316 14 4 11.773268 4 9 C 4 6.2267316 6.2267316 4 9 4 z"></path>
+                        </svg>
                     </button>
                 </div>
             </form>
