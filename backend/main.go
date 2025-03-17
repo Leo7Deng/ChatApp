@@ -72,6 +72,13 @@ func main() {
 
 	mux.HandleFunc("/api/register", middleware.AddCorsHeaders(auth.RegisterHandler))
 	mux.HandleFunc("/api/login", middleware.AddCorsHeaders(auth.LoginHandler))
+	mux.HandleFunc("/api/circles/search", middleware.AddCorsHeaders(
+		middleware.AuthMiddleware(
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				circles.SearchTextHandler(w, r)
+			}),
+		),
+	))
 	mux.Handle("/api/circles", middleware.AddCorsHeaders(
 		middleware.AuthMiddleware(
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

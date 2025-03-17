@@ -350,3 +350,42 @@ func LoadCircleUserMap() (map[string]map[string]bool, error) {
 	}
 	return circleUsers, nil
 }
+
+func SearchCircle(circleID string, content string) ([]models.SearchMessage, error) {
+	ctx := context.Background()
+	conn, err := pool.Acquire(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
+		return nil, err
+	}
+	defer conn.Release()
+
+	rows, err := conn.Query(
+		ctx,
+		`
+		SELECT m.content, m.created_at, u.username
+		FROM messages m
+		INNER JOIN users u ON m.author_id = u.id
+		WHERE m.circle_id = $1 AND m.content ILIKE '%' || $2 || '%';
+		`,
+		circleID,
+		content,
+	)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to query PSQL: %v\n", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var messages []models.SearchMessage
+	for rows.Next() {
+		var message models.SearchMessage
+		err = rows.Scan(&message.Content, &message.CreatedAt, &message.AuthorUsername)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to scan row: %v\n", err)
+			return nil, err
+		}
+		messages = append(messages, message)
+	}
+	return messages, nil
+}

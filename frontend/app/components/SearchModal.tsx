@@ -24,7 +24,7 @@ function SearchModal({ isOpen, setOpen, circleId }: SearchModalProps) {
         };
         const body = {
             circle_id: circleId,
-            content: (e.currentTarget.elements.namedItem('circleName') as HTMLInputElement).value,
+            content: (document.getElementById("circleName") as HTMLInputElement).value,
         };
         console.log(body);
         fetch('http://localhost:8000/api/circles/search', {

@@ -256,3 +256,28 @@ func DeleteCircleHandler(w http.ResponseWriter, r *http.Request, hub *websockets
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Circle deleted\n")
 }
+
+func SearchTextHandler(w http.ResponseWriter, r *http.Request) {
+	type SearchData struct {
+		CircleID string `json:"circle_id"`
+		Content string `json:"content"`
+	}
+	var searchData SearchData
+	err := json.NewDecoder(r.Body).Decode(&searchData)
+	if err != nil {
+		fmt.Printf("HTTP 400 bad request\n")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("HTTP 400 bad request")
+		return
+	}
+	results, err := postgres.SearchCircle(searchData.CircleID, searchData.Content)
+	if err != nil {
+		fmt.Printf("Failed to search circles\n")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("Failed to search circles\n")
+		return
+	}
+	fmt.Printf("Search results: %v\n", results)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(results)
+}
