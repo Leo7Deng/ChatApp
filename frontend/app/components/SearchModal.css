@@ -1,5 +1,5 @@
 .search-modal {
-    height: 80vh;
+    height: 52vh;
 }
 
 .search-result-content {
@@ -17,7 +17,13 @@
 .search-results {
     padding: 1rem;
     overflow-y: scroll;
-    height: 34vh;
+    height: 35vh;
     border: 1px solid hsl(0, 0%, 90%);
     border-radius: 5px;
+}
+
+.search-stats {
+    color: hsl(0, 0%, 40%);
+    font-size: 0.85rem;
+    margin-top: 0.6rem;
 }

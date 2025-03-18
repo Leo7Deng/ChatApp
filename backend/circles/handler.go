@@ -277,7 +277,41 @@ func SearchTextHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("Failed to search circles\n")
 		return
 	}
+	type Stats struct {
+		TotalMatches int `json:"total_matches"`
+		AverageLength float32 `json:"average_length"`
+		MostFoundAuthor string `json:"most_found_author"`
+	}
+	var stats Stats
+	stats.TotalMatches = len(results)
+	if stats.TotalMatches > 0 {
+		var totalLength int
+		authorMap := make(map[string]int)
+		for _, result := range results {
+			totalLength += len(result.Content)
+			authorMap[result.AuthorUsername]++
+		}
+		stats.AverageLength = float32(totalLength) / float32(stats.TotalMatches)
+		var maxCount int
+		var mostFoundAuthor string
+		for author, count := range authorMap {
+			if count > maxCount {
+				maxCount = count
+				mostFoundAuthor = author
+			}
+		}
+		stats.MostFoundAuthor = mostFoundAuthor
+	}
+
+	fmt.Printf("Search stats: %v\n", stats)
+
 	fmt.Printf("Search results: %v\n", results)
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(results)
+	json.NewEncoder(w).Encode(struct {
+		Results []models.SearchMessage `json:"results"`
+		Stats   Stats                  `json:"stats"`
+	}{
+		Results: results,
+		Stats:   stats,
+	})
 }

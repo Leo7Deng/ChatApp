@@ -17,6 +17,10 @@ function SearchModal({ isOpen, setOpen, circleId }: SearchModalProps) {
     const { getAccessToken } = authContext;
 
     const [results, setResults] = useState<any[]>([]);
+    const [totalMatches, setTotalMatches] = useState(0);
+    const [averageLength, setAverageLength] = useState(0);
+    const [mostFoundAuthor, setMostFoundAuthor] = useState("");
+
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         const token = await getAccessToken();
@@ -35,12 +39,17 @@ function SearchModal({ isOpen, setOpen, circleId }: SearchModalProps) {
         })
             .then(async (response) => {
                 const data = await response.json();
-                const mappedResults = data.map((result: any) => ({
+                const mappedResults = data.results.map((result: any) => ({
                     content: result.content,
                     created_at: result.created_at,
                     author: result.author_username
                 }));
                 setResults(mappedResults);
+                setTotalMatches(data.stats.total_matches);
+                setAverageLength(data.stats.average_length);
+                setMostFoundAuthor(data.stats.most_found_author
+                    ? data.stats.most_found_author
+                    : "No author found");
                 if (!response.ok) {
                     console.log("Error:", data);
                 }
@@ -83,6 +92,11 @@ function SearchModal({ isOpen, setOpen, circleId }: SearchModalProps) {
                         <div className="search-result-subtitle">{result.author + " | " + result.created_at}</div>
                     </div>
                 ))}
+            </div>
+            <div className="search-stats">
+                Total matches: {totalMatches ? totalMatches : "N/A"} <br />
+                Average match length: {averageLength ? averageLength : "N/A"} <br />
+                Most found author: {mostFoundAuthor ? mostFoundAuthor : "N/A"}
             </div>
         </div>
     );
