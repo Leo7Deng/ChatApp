@@ -16,7 +16,7 @@ function EditModal({ isOpen, setOpen, circleId }: InviteModalProps) {
     }
     const { getAccessToken } = authContext;
     const [users, setUsers] = useState<EditUser[]>([]);
-    
+
     useEffect(() => {
         async function fetchEditUsers() {
             const token = await getAccessToken();
@@ -51,10 +51,10 @@ function EditModal({ isOpen, setOpen, circleId }: InviteModalProps) {
         }
         fetchEditUsers();
     }, [circleId, getAccessToken]);
-    
+
     const handleRoleChange = (userId: string, newRole: string) => {
-        setUsers(prevUsers => 
-            prevUsers.map(user => 
+        setUsers(prevUsers =>
+            prevUsers.map(user =>
                 user.id === userId ? { ...user, role: newRole } : user
             )
         );
@@ -91,7 +91,7 @@ function EditModal({ isOpen, setOpen, circleId }: InviteModalProps) {
     };
 
     if (!isOpen) return null;
-    
+
     return (
         <div className="mx-auto max-w-screen-xl relative z-10 focus:outline-none">
             <form action="#" className="mx-auto mb-4 mt-6 max-w-md space-y-4" onSubmit={handleSubmit}>
@@ -128,13 +128,14 @@ function EditModal({ isOpen, setOpen, circleId }: InviteModalProps) {
                                     >
                                         <option value="member">Member</option>
                                         <option value="admin">Admin</option>
+                                        <option value="remove">Remove</option>
                                     </select>
                                 </li>
                             ))}
                         </ul>
                     </div>
                 </div>
-    
+
                 <div className="flex items-center justify-between">
                     <button
                         type="submit"

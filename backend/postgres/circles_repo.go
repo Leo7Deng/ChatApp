@@ -231,26 +231,43 @@ func EditRoleInCircle(circleID string, targetUserID string, role string) error {
 	}
 	defer conn.Release()
 
-	err = conn.QueryRow(
-		ctx,
-		`
+	if role == "remove" {
+		_, err = conn.Exec(
+			ctx,
+			`
+			DELETE FROM users_circles
+			WHERE user_id = $1 AND circle_id = $2;
+			`,
+			targetUserID,
+			circleID,
+		)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to query PSQL: %v\n", err)
+			return err
+		}
+		fmt.Printf("Role removed\n")
+		return nil
+	} else {
+		err = conn.QueryRow(
+			ctx,
+			`
 		UPDATE users_circles
 		SET role = $1
 		WHERE user_id = $2 AND circle_id = $3
 		RETURNING role;
 		`,
-		role,
-		targetUserID,
-		circleID,
-	).Scan(&role)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to query PSQL: %v\n", err)
-		return err
+			role,
+			targetUserID,
+			circleID,
+		).Scan(&role)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to query PSQL: %v\n", err)
+			return err
+		}
+		fmt.Printf("Role updated: %v\n", role)
+		return nil
 	}
-	fmt.Printf("Role updated: %v\n", role)
-	return nil
 }
-
 
 func GetRoleInCircle(userID string, circleID string) (string, error) {
 	var role string
