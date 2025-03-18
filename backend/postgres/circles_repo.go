@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/Leo7Deng/ChatApp/models"
@@ -389,5 +390,8 @@ func SearchCircle(circleID string, content string) ([]models.SearchMessage, erro
 		message.CreatedAt = time.Format("2006-01-02 15:04:05 EST")
 		messages = append(messages, message)
 	}
+	sort.Slice(messages, func(i, j int) bool {
+		return messages[i].CreatedAt > messages[j].CreatedAt
+	})
 	return messages, nil
 }
