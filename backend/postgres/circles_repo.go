@@ -269,59 +269,27 @@ func EditRoleInCircle(circleID string, targetUserID string, role string) error {
 	}
 }
 
-func GetRoleInCircle(userID string, circleID string) (string, error) {
-	var role string
-	err := pool.QueryRow(
-		context.Background(),
-		`
-		SELECT role
-		FROM users_circles
-		WHERE user_id = $1 AND circle_id = $2;
-		`,
-		userID,
-		circleID,
-	).Scan(&role)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to query PSQL: %v\n", err)
-		return "", err
-	}
-	return role, nil
-}
-
 func GetExistingUsersInCircle(userID string, circleID string) ([]models.UserRole, error) {
-	requestingRole, err := GetRoleInCircle(userID, circleID)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to get role in circle: %v\n", err)
-		return nil, err
-	}
-	if requestingRole != "admin" {
-		fmt.Fprintf(os.Stderr, "User is not admin of circle\n")
-		return nil, fmt.Errorf("permission error")
-	}
-
-	var users []models.UserRole
 	rows, err := pool.Query(
 		context.Background(),
-		`
-		SELECT u.id, u.username, uc.role
-		FROM users u
-		INNER JOIN users_circles uc ON u.id = uc.user_id
-		WHERE u.id != $1 AND uc.circle_id = $2
-		ORDER BY u.username ASC;
-		`,
+		"SELECT * FROM get_users_in_circle($1, $2);",
 		userID,
 		circleID,
 	)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to query PSQL: %v\n", err)
+		if err.Error() == "permission error" {
+			fmt.Fprintf(os.Stderr, "User is not admin of circle\n")
+			return nil, fmt.Errorf("permission error")
+		}
+		fmt.Fprintf(os.Stderr, "Unable to query get_existing_users_in_circle: %v\n", err)
 		return nil, err
 	}
 	defer rows.Close()
 
+	var users []models.UserRole
 	for rows.Next() {
 		var user models.UserRole
-		err = rows.Scan(&user.UserID, &user.Username, &user.Role)
-		if err != nil {
+		if err := rows.Scan(&user.UserID, &user.Username, &user.Role); err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to scan row: %v\n", err)
 			return nil, err
 		}
@@ -380,17 +348,12 @@ func SearchCircle(circleID string, content string) ([]models.SearchMessage, erro
 
 	rows, err := conn.Query(
 		ctx,
-		`
-		SELECT m.content, m.created_at, u.username
-		FROM messages m
-		INNER JOIN users u ON m.author_id = u.id
-		WHERE m.circle_id = $1 AND m.content ILIKE '%' || $2 || '%';
-		`,
+		"SELECT * FROM search_circle_messages($1, $2)",
 		circleID,
 		content,
 	)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to query PSQL: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Unable to query search_circle_messages: %v\n", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -407,8 +370,10 @@ func SearchCircle(circleID string, content string) ([]models.SearchMessage, erro
 		message.CreatedAt = time.Format("2006-01-02 15:04:05 EST")
 		messages = append(messages, message)
 	}
+
 	sort.Slice(messages, func(i, j int) bool {
 		return messages[i].CreatedAt > messages[j].CreatedAt
 	})
+
 	return messages, nil
 }
