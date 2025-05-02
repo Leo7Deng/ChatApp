@@ -83,49 +83,6 @@ func InsertRefreshToken(userID string, token uuid.UUID) {
 	}
 }
 
-func AddUsersToCircle(circleID string, userIDs []string) error {
-	ctx := context.Background()
-	conn, err := pool.Acquire(ctx)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to acquire a connection from the pool: %v\n", err)
-		return err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to begin transaction: %v\n", err)
-	}
-	defer func() {
-		if err != nil {
-			_ = tx.Rollback(ctx)
-		}
-	}()
-
-	for _, id := range userIDs {
-		_, err = tx.Exec(
-			ctx,
-			`
-			INSERT INTO users_circles (user_id, circle_id, joined_at, role)
-			VALUES ($1, $2, NOW(), 'member');
-			`,
-			id,
-			circleID)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error inserting into users_circles: %v\n", err)
-			return err
-		}
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to commit transaction: %v\n", err)
-		return err
-	}
-
-	return nil
-}
-
 func GetUsername(userID string) (string, error) {
 	ctx := context.Background()
 	conn, err := pool.Acquire(ctx)

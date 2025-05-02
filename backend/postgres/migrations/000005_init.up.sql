@@ -22,10 +22,10 @@ RETURNS TABLE (
 BEGIN
     IF NOT EXISTS (
         SELECT *
-        FROM users_circles
-        WHERE user_id = request_user_id
-          AND circle_id = circle_id_input
-          AND role = 'admin'
+        FROM users_circles uc
+        WHERE uc.user_id = request_user_id
+          AND uc.circle_id = circle_id_input
+          AND uc.role = 'admin'
     ) THEN
         RAISE EXCEPTION 'permission denied';
     END IF;
@@ -34,7 +34,7 @@ BEGIN
     SELECT u.id, u.username, uc.role
     FROM users u
     INNER JOIN users_circles uc ON u.id = uc.user_id
-    WHERE u.id != p_requester_id AND uc.circle_id = p_circle_id
+    WHERE u.id != request_user_id AND uc.circle_id = circle_id_input
     ORDER BY u.username ASC;
 END;
 $$ LANGUAGE plpgsql;

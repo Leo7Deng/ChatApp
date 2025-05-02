@@ -270,6 +270,7 @@ func SearchTextHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("HTTP 400 bad request")
 		return
 	}
+	fmt.Println("Circle ID: " + searchData.CircleID + " Content: " + searchData.Content)
 	results, err := postgres.SearchCircle(searchData.CircleID, searchData.Content)
 	if err != nil {
 		fmt.Printf("Failed to search circles\n")
