@@ -5,3 +5,6 @@ CREATE TABLE messages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     content TEXT NOT NULL
 );
+
+CREATE INDEX idx_messages_circle_date
+  ON messages(circle_id, created_at DESC);

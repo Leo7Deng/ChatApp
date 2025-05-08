@@ -14,3 +14,9 @@ CREATE TABLE users_circles (
     FOREIGN KEY (circle_id) REFERENCES circles(id) ON DELETE CASCADE,
     UNIQUE (user_id, circle_id)
 );
+
+CREATE INDEX idx_users_circles_user_id
+  ON users_circles(user_id);
+
+CREATE INDEX idx_users_circles_circle_id
+  ON users_circles(circle_id);
