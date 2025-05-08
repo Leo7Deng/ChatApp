@@ -4,7 +4,7 @@ import { useAuth } from "../context/authContext";
 
 
 
-export function useWebSocketDashboard(setCircles: React.Dispatch<React.SetStateAction<Circle[]>>, allMessages: { [key: string]: Message[] }, setAllMessages: React.Dispatch<React.SetStateAction<{ [key: string]: Message[] }>> ) {
+export function useWebSocketDashboard(setCircles: React.Dispatch<React.SetStateAction<Circle[]>>, setAllMessages: React.Dispatch<React.SetStateAction<{ [key: string]: Message[] }>> ) {
     const ws = useRef<WebSocket | null>(null);
     const lastSentMessageTime = useRef<string>("");
     const authContext = useAuth();
@@ -15,18 +15,22 @@ export function useWebSocketDashboard(setCircles: React.Dispatch<React.SetStateA
 
     // Connect to WebSocket
     useEffect(() => {
-        const connectWebSocket = async () => {
+        let wsCurrent: WebSocket;
+
+        (async () => {
             const token = await getAccessToken();
-            ws.current = new WebSocket("ws://localhost:8000/ws", [token]);
-            ws.current.onopen = () => console.log("ws opened");
-            ws.current.onclose = () => console.log("ws closed");
-            const wsCurrent = ws.current;
-            return () => {
+            wsCurrent = new WebSocket("ws://localhost:8000/ws", [token]);
+            wsCurrent.onopen = () => console.log("ws opened");
+            wsCurrent.onclose = () => console.log("ws closed");
+            ws.current = wsCurrent;
+        })();
+
+        return () => {
+            if (wsCurrent) {
                 wsCurrent.close();
-            };
+            }
         };
-        connectWebSocket();
-    }, []);
+    }, [getAccessToken]);
 
     // Handle incoming messages
     useEffect(() => {
@@ -35,47 +39,51 @@ export function useWebSocketDashboard(setCircles: React.Dispatch<React.SetStateA
             try {
                 var parsedData = JSON.parse(e.data);
                 switch (parsedData.origin) {
-                    case "server":
+                    case "server": {
                         switch (parsedData.type) {
-                            case "message":
+                            case "message": {
                                 switch (parsedData.action) {
-                                    case "create":
-                                        const circleID = parsedData.circle_id;
-                                        parsedData = parsedData.message;
-                                        const isDuplicate = lastSentMessageTime.current === parsedData.created_at
-                                        console.log("isDuplicate:", isDuplicate);
+                                    case "create": {
+                                        const message: Message = parsedData.message;
+                                        const circleID = message.circle_id;
+
+                                        const isDuplicate = lastSentMessageTime.current === message.created_at;
                                         if (isDuplicate) {
-                                            const sentTime = new Date(parsedData.created_at).getTime();
-                                            const receivedTime = new Date().getTime();
-                                            const timeDifference = receivedTime - sentTime;
-                                            console.log(`Message round-trip time: ${timeDifference}ms`);
+                                            const sentTime = new Date(message.created_at).getTime();
+                                            const receivedTime = Date.now();
+                                            console.log(`Message round-trip time: ${receivedTime - sentTime}ms`);
                                             break;
                                         }
-                                        setAllMessages({
-                                            ...allMessages,
-                                            [parsedData.circle_id]: [
-                                                ...allMessages[parsedData.circle_id] || [],
-                                                parsedData,
-                                            ],
+
+                                        setAllMessages(prev => {
+                                            const current = prev[circleID] ?? [];
+                                            return {
+                                                ...prev,
+                                                [circleID]: [...current, message],
+                                            };
                                         });
                                         break;
-                                    case "delete":
+                                    }
+                                    case "delete": {
                                         parsedData = parsedData.circle;
                                         const circleIDToDelete = parsedData.circle_id;
-                                        console.log("Removing circle with ID:", circleID);
+                                        console.log("Removing circle with ID:", circleIDToDelete);
                                         setCircles((prevCircles) => prevCircles.filter((circle) => circle.id !== circleIDToDelete));
-                                        setAllMessages({
-                                            ...allMessages,
+                                        setAllMessages(prev => ({
+                                            ...prev,
                                             [circleIDToDelete]: [],
-                                        });
+                                        }));
                                         break;
-                                    default:
+                                    }
+                                    default: {
                                         console.error("Unknown message action:", parsedData.action);
+                                    }
                                 }
                                 break;
-                            case "circle":
+                            }
+                            case "circle": {
                                 switch (parsedData.action) {
-                                    case "create":
+                                    case "create": {
                                         parsedData = parsedData.circle;
                                         console.log("Adding circle:", parsedData.id);
                                         const newCircle : Circle = {
@@ -85,42 +93,55 @@ export function useWebSocketDashboard(setCircles: React.Dispatch<React.SetStateA
                                         };
                                         setCircles((prevCircles) => [...prevCircles, newCircle]);
                                         break;
-                                    case "delete":
+                                    }
+                                    case "delete": {
                                         parsedData = parsedData.circle;
                                         const circleID = parsedData.id;
                                         console.log("Removing circle with ID:", circleID);
                                         setCircles((prevCircles) => prevCircles.filter((circle) => circle.id !== circleID));
-                                        setAllMessages({
-                                            ...allMessages,
+                                        setAllMessages(prev => ({
+                                            ...prev,
                                             [circleID]: [],
-                                        });
+                                        }));
                                         break;
-                                    default:
+                                    }
+                                    default: {
                                         console.error("Unknown message action:", parsedData.action);
+                                    }
                                 }
                                 break;
-                            default:
+                            }
+                            default: {
                                 console.error("Unknown message type:", parsedData.type);
                                 return;
+                            }
                         }
                         break;
-                    case "client":
+                    }
+                    case "client": {
                         break;
-                    default:
+                    }
+                    default: {
                         console.error("Unknown origin:", parsedData.origin);
                         return;
+                    }
                 }
             } catch (error) {
                 console.log(error);
                 console.error("Error parsing WebSocket message:", error);
             }
+            // print a list of all messages
+            // console.log("allMessages:", JSON.stringify(allMessages, null, 2));
         };
     }, [ws.current]);
 
     // Function to send messages
     const sendMessage = (messagePayload: WebSocketMessage) => {
-        const currentTime = new Date().toISOString();
-        lastSentMessageTime.current = currentTime;
+        if (messagePayload.message) {
+            lastSentMessageTime.current = messagePayload.message.created_at;
+        } else {
+            console.error("Message payload is undefined");
+        }
 
         if (ws.current?.readyState === WebSocket.OPEN) {
             ws.current.send(JSON.stringify(messagePayload));

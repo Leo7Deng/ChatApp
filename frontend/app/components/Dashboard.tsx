@@ -17,7 +17,7 @@ export default function Dashboard2() {
 
     const [circles, setCircles] = useState<Circle[]>([]);
     const { userID, username, fetchUserData, handleDelete } = useFetchDashboard(setCircles);
-    const { sendMessage } = useWebSocketDashboard(setCircles, allMessages, setAllMessages);
+    const { sendMessage } = useWebSocketDashboard(setCircles, setAllMessages);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -106,6 +106,7 @@ export default function Dashboard2() {
                     [selectedCircleID]: [...messages, message],
                 };
             });
+            console.log("allMessages from dashboard:", allMessages);
             (event.target as HTMLInputElement).value = "";
         }
     }
